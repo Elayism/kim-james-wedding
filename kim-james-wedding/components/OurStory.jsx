@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { motion } from "framer-motion";
 import FadeInSection, { childVariants } from "./FadeInSection";
 import { SectionDivider } from "./Flourishes";
+import Lightbox from "./Lightbox";
 
 const storyImages = [
   { src: "/images/story-1.jpg", alt: "Our Story" },
@@ -11,58 +12,23 @@ const storyImages = [
   // Add more story images here — they'll slot in automatically
 ];
 
-const slideVariants = {
-  enter: (dir) => ({
-    x: dir > 0 ? "100%" : "-100%",
-    opacity: 0,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
-  },
-  exit: (dir) => ({
-    x: dir > 0 ? "-100%" : "100%",
-    opacity: 0,
-    transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] },
-  }),
-};
-
 export default function OurStory() {
-  const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const [dragStart, setDragStart] = useState(null);
-  const [paused, setPaused] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const next = useCallback(() => {
-    setDirection(1);
-    setCurrent((c) => (c + 1) % storyImages.length);
-  }, []);
-
-  const prev = useCallback(() => {
-    setDirection(-1);
-    setCurrent((c) => (c - 1 + storyImages.length) % storyImages.length);
-  }, []);
-
-  // Auto-slide every 2.5s, pauses on hover/touch
-  useEffect(() => {
-    if (paused) return;
-    const timer = setInterval(next, 2500);
-    return () => clearInterval(timer);
-  }, [paused, next]);
-
-  const onDragStart = (e) => {
-    setPaused(true);
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    setDragStart(x);
+  const openLightbox = (index) => {
+    setCurrentIndex(index);
+    setLightboxOpen(true);
   };
-  const onDragEnd = (e) => {
-    if (dragStart === null) return;
-    const x = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-    const diff = dragStart - x;
-    if (Math.abs(diff) > 50) diff > 0 ? next() : prev();
-    setDragStart(null);
-    setTimeout(() => setPaused(false), 3000);
+
+  const closeLightbox = () => setLightboxOpen(false);
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % storyImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + storyImages.length) % storyImages.length);
   };
 
   return (
@@ -84,97 +50,48 @@ export default function OurStory() {
 
         <motion.p
           variants={childVariants}
-          className="text-base md:text-lg text-[var(--color-espresso)] leading-relaxed max-w-2xl mx-auto mb-6 font-serif text-center px-6"
+          className="text-base md:text-lg text-[var(--color-espresso)] leading-relaxed max-w-2xl mx-auto mb-8 font-serif text-center px-6"
         >
           {/* GENERIC PLACEHOLDER STORY */}
           Every love story is beautiful, but ours is our favorite. We met, we fell in love, and now we are committing to a lifetime of adventures together. Thank you for being a part of our journey.
         </motion.p>
 
-        {/* Slide carousel — full width on mobile, constrained on desktop */}
-        <motion.div
-          variants={childVariants}
-          className="relative w-full sm:max-w-2xl mx-auto sm:px-4"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-        >
-          {/* Image frame */}
-          <div
-            className="relative overflow-hidden sm:rounded-xl border-0 sm:border-2 sm:border-[var(--color-champagne)] sm:shadow-xl bg-[var(--color-ivory)]"
-            style={{ aspectRatio: "4/3" }}
-            onMouseDown={onDragStart}
-            onMouseUp={onDragEnd}
-            onTouchStart={onDragStart}
-            onTouchEnd={onDragEnd}
-          >
-            {/* Gold corner flourishes — desktop only */}
-            <div className="hidden sm:block absolute top-2 left-2 z-10 w-6 h-6 border-t-2 border-l-2 border-[var(--color-gold-brown)] opacity-60 rounded-tl pointer-events-none" />
-            <div className="hidden sm:block absolute bottom-2 right-2 z-10 w-6 h-6 border-b-2 border-r-2 border-[var(--color-gold-brown)] opacity-60 rounded-br pointer-events-none" />
-
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.img
-                key={current}
-                src={storyImages[current].src}
-                alt={storyImages[current].alt}
-                variants={slideVariants}
-                custom={direction}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="absolute inset-0 w-full h-full object-contain select-none"
+        {/* Photo Grid - click to zoom */}
+        <motion.div variants={childVariants} className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 max-w-4xl mx-auto px-4">
+          {storyImages.map((image, index) => (
+            <button
+              key={index}
+              onClick={() => openLightbox(index)}
+              className="group relative overflow-hidden rounded-lg sm:rounded-xl border-0 sm:border-2 sm:border-[var(--color-champagne)] shadow-md hover:shadow-xl transition-all duration-300 bg-[var(--color-ivory)]"
+              style={{ aspectRatio: "4/3" }}
+            >
+              <img
+                src={image.src}
+                alt={image.alt}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 draggable={false}
               />
-            </AnimatePresence>
-
-            {/* Arrow — Left */}
-            <button
-              onClick={() => { setPaused(true); prev(); setTimeout(() => setPaused(false), 3000); }}
-              aria-label="Previous photo"
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-ivory)]/70 hover:bg-[var(--color-champagne)] border border-[var(--color-champagne)] transition-all duration-200 text-[var(--color-gold-brown)] text-2xl shadow"
-            >
-              ‹
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-[var(--color-gold-brown)]">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                </div>
+              </div>
             </button>
-
-            {/* Arrow — Right */}
-            <button
-              onClick={() => { setPaused(true); next(); setTimeout(() => setPaused(false), 3000); }}
-              aria-label="Next photo"
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-ivory)]/70 hover:bg-[var(--color-champagne)] border border-[var(--color-champagne)] transition-all duration-200 text-[var(--color-gold-brown)] text-2xl shadow"
-            >
-              ›
-            </button>
-          </div>
-
-          {/* Dot indicators */}
-          <div className="flex justify-center gap-2 mt-4 px-4 sm:px-0">
-            {storyImages.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setPaused(true);
-                  setDirection(i > current ? 1 : -1);
-                  setCurrent(i);
-                  setTimeout(() => setPaused(false), 3000);
-                }}
-                aria-label={`Go to photo ${i + 1}`}
-                className="transition-all duration-300"
-                style={{
-                  width: i === current ? "24px" : "8px",
-                  height: "8px",
-                  borderRadius: "4px",
-                  backgroundColor:
-                    i === current
-                      ? "var(--color-gold-brown)"
-                      : "var(--color-champagne)",
-                }}
-              />
-            ))}
-          </div>
-
-          <p className="text-center mt-2 text-sm font-serif text-[var(--color-soft-taupe)] tracking-widest">
-            {current + 1} / {storyImages.length}
-          </p>
+          ))}
         </motion.div>
       </FadeInSection>
+
+      {/* Lightbox */}
+      <Lightbox
+        images={storyImages}
+        currentIndex={currentIndex}
+        isOpen={lightboxOpen}
+        onClose={closeLightbox}
+        onNext={nextImage}
+        onPrev={prevImage}
+      />
     </div>
   );
 }
