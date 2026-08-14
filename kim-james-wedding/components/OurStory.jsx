@@ -86,7 +86,8 @@ export default function OurStory() {
           variants={childVariants}
           className="text-base md:text-lg text-[var(--color-espresso)] leading-relaxed max-w-2xl mx-auto mb-6 font-serif text-center px-6"
         >
-          [COUPLE_STORY_TEXT]
+          {/* GENERIC PLACEHOLDER STORY */}
+          Every love story is beautiful, but ours is our favorite. We met, we fell in love, and now we are committing to a lifetime of adventures together. Thank you for being a part of our journey.
         </motion.p>
 
         {/* Slide carousel — full width on mobile, constrained on desktop */}

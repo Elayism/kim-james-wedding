@@ -100,6 +100,12 @@ export const restoreInMemoryRSVP = (id: string) => {
   return false;
 };
 
+export const permanentDeleteInMemoryRSVP = (id: string) => {
+  const initialLength = inMemoryRSVPs.length;
+  inMemoryRSVPs = inMemoryRSVPs.filter((r) => String(r.id) !== String(id));
+  return inMemoryRSVPs.length !== initialLength;
+};
+
 export const checkDuplicateName = (allRecords: RsvpRecord[], namesToCheck: string[]) => {
   const activeRecords = allRecords.filter((r) => !r.is_deleted && r.attending === "accepts");
   

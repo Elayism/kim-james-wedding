@@ -24,7 +24,7 @@ export default function Footer() {
         </motion.div>
 
         <motion.div variants={childVariants} className="text-xs text-[var(--color-soft-taupe)] max-w-md mx-auto italic font-serif">
-          [ADDITIONAL_NOTES_PLACEHOLDER]
+          
         </motion.div>
       </FadeInSection>
     </div>

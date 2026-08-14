@@ -7,7 +7,7 @@ import { CornerFlourish, SectionDivider } from "./Flourishes";
 
 export default function GiftRegistry() {
   const [copied, setCopied] = useState(false);
-  const accountInfo = "Kimberlyn & James Wedding Registry / GCash: 0917-123-4567";
+  const accountInfo = "Maribank: Kimberlyn Oliver (14848808514) | GCash: 0917-123-4567";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(accountInfo);
@@ -37,8 +37,8 @@ export default function GiftRegistry() {
             Your presence at our wedding is the greatest gift of all. However, should you wish to honor us with a gift, a monetary contribution toward our future together would be sincerely appreciated.
           </p>
 
-          <div className="text-xs uppercase tracking-widest text-[var(--color-soft-taupe)] font-sans font-semibold mb-4">
-            [GIFT_REGISTRY_DETAILS_PLACEHOLDER]
+          <div className="text-xs uppercase tracking-widest text-[var(--color-soft-taupe)] font-sans font-semibold mb-4 text-center">
+            Maribank (Kimberlyn Oliver: 14848808514) • GCash (0917-123-4567) • Email for international details
           </div>
 
           {/* Copy to Clipboard Button with Wax Seal Checkmark Animation */}

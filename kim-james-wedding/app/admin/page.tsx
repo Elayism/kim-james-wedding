@@ -112,6 +112,25 @@ export default function AdminDashboard() {
     }
   };
 
+  // Permanent delete handler
+  const handlePermanentDelete = async (id: string | number, name: string) => {
+    if (!confirm(`Are you sure you want to PERMANENTLY delete the RSVP for "${name}"? This action cannot be undone.`)) return;
+
+    try {
+      const res = await fetch(`/api/rsvp?id=${id}&permanent=true`, { method: "DELETE" });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        showToast(`Permanently deleted "${name}"`, "info");
+        fetchRecords();
+      } else {
+        alert(json.message || "Failed to permanently delete record");
+      }
+    } catch (err) {
+      console.error("Permanent Delete error:", err);
+      alert("Network error while deleting");
+    }
+  };
+
   // Compute key stats for active records
   const stats = useMemo(() => {
     const totalResponses = activeRecords.length;
@@ -260,7 +279,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-ivory)] text-[var(--color-espresso)] p-4 md:p-8 font-serif">
+    <div className="h-screen overflow-y-auto bg-[var(--color-ivory)] text-[var(--color-espresso)] p-4 md:p-8 font-serif">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Notification Toast */}
         {notification && (
@@ -596,13 +615,22 @@ export default function AdminDashboard() {
                             🗑️ Delete
                           </button>
                         ) : (
-                          <button
-                            onClick={() => handleRestore(r.id, r.full_name)}
-                            className="px-3 py-1 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[11px] transition"
-                            title="Restore back to active RSVPs"
-                          >
-                            ↺ Restore
-                          </button>
+                          <div className="flex flex-col gap-2">
+                            <button
+                              onClick={() => handleRestore(r.id, r.full_name)}
+                              className="px-3 py-1 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[11px] transition"
+                              title="Restore back to active RSVPs"
+                            >
+                              ↺ Restore
+                            </button>
+                            <button
+                              onClick={() => handlePermanentDelete(r.id, r.full_name)}
+                              className="px-3 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[11px] transition"
+                              title="Permanently Delete"
+                            >
+                              ✕ Delete
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>

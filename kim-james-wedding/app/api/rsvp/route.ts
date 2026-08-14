@@ -6,6 +6,7 @@ import {
   addInMemoryRSVP,
   softDeleteInMemoryRSVP,
   restoreInMemoryRSVP,
+  permanentDeleteInMemoryRSVP,
   checkDuplicateName,
   RsvpRecord,
 } from "@/lib/mockStore";
@@ -181,25 +182,35 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, message: "Missing record ID" }, { status: 400 });
     }
 
+    const permanent = searchParams.get("permanent") === "true";
+
     if (isSupabaseConfigured()) {
       try {
-        const { error } = await supabase
-          .from("rsvps")
-          .update({ is_deleted: true })
-          .eq("id", id);
+        let error;
+        if (permanent) {
+          const res = await supabase.from("rsvps").delete().eq("id", id);
+          error = res.error;
+        } else {
+          const res = await supabase.from("rsvps").update({ is_deleted: true }).eq("id", id);
+          error = res.error;
+        }
         if (!error) {
-          return NextResponse.json({ success: true, message: "Record deleted successfully" });
+          return NextResponse.json({ success: true, message: permanent ? "Record permanently deleted" : "Record deleted successfully" });
         }
       } catch (e) {
         console.warn("Supabase delete error:", e);
       }
     }
 
-    softDeleteInMemoryRSVP(id);
+    if (permanent) {
+      permanentDeleteInMemoryRSVP(id);
+    } else {
+      softDeleteInMemoryRSVP(id);
+    }
 
     return NextResponse.json({
       success: true,
-      message: "Record moved to deleted history",
+      message: permanent ? "Record permanently deleted" : "Record moved to deleted history",
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error?.message }, { status: 500 });
