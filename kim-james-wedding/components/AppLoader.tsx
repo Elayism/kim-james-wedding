@@ -10,9 +10,11 @@ export default function AppLoader({ children }: { children: React.ReactNode }) {
     <>
       {isLoading && <LoadingScreen onLoaded={() => setIsLoading(false)} />}
       <div
-        className={`transition-all duration-700 ease-out ${
-          isLoading ? "blur-sm scale-[0.99]" : "blur-0 scale-100"
-        }`}
+        className={
+          isLoading
+            ? "opacity-0"
+            : "opacity-100 transition-opacity duration-500 ease-out"
+        }
       >
         {children}
       </div>

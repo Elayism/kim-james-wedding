@@ -43,7 +43,7 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
 
   return (
     <div
-      className={`relative w-full h-full bg-white transition-opacity duration-1000 ${
+      className={`relative w-full min-h-screen bg-white transition-opacity duration-1000 ${
         isEnding ? "opacity-0" : "opacity-100"
       }`}
     >
@@ -67,6 +67,15 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
         onTouchEnd={handleTap}
         aria-label="Tap to open invitation"
       />
+      
+      {/* Tap hint */}
+      {!hasInteracted && (
+        <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center pointer-events-none">
+          <div className="animate-bounce px-4 py-2 rounded-full bg-black/30 backdrop-blur-sm text-white text-xs font-sans tracking-widest uppercase">
+            Tap to open
+          </div>
+        </div>
+      )}
     </div>
   );
 }

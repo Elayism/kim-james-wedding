@@ -91,7 +91,7 @@ export default function Home() {
 
       {/* Envelope Section (always rendered so it can be blurred during loading) */}
       {!showSite && (
-        <section id="envelope" className="w-full">
+        <section id="envelope" className="w-full min-h-screen">
           <EnvelopeIntro 
             onOpenComplete={handleOpenComplete} 
             onPlayAudio={handlePlayAudio} 

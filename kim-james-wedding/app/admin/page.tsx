@@ -23,13 +23,13 @@ interface RsvpRecord {
 }
 
 const PIE_COLORS: Record<string, string> = {
-  Chicken: "#B8A88A", // warm taupe/gold
-  Beef: "#8B5E3C", // espresso/gold-brown
-  Vegetarian: "#6B8E23", // olive sage
-  Fish: "#4682B4", // slate blue
-  Pork: "#D2691E", // copper / bronze
-  "Kids Meal": "#E4D5B7", // light champagne
-  Other: "#A9A9A9", // gray
+  Chicken: "#B8A88A",
+  Beef: "#8B5E3C",
+  Vegetarian: "#6B8E23",
+  Fish: "#4682B4",
+  Pork: "#D2691E",
+  "Kids Meal": "#E4D5B7",
+  Other: "#A9A9A9",
 };
 
 export default function AdminDashboard() {
@@ -70,14 +70,12 @@ export default function AdminDashboard() {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      // Fetch active records
       const resActive = await fetch("/api/rsvp?type=active");
       const jsonActive = await resActive.json();
       if (resActive.ok && jsonActive.success) {
         setActiveRecords(jsonActive.data || []);
       }
 
-      // Fetch deleted records
       const resDeleted = await fetch("/api/rsvp?type=deleted");
       const jsonDeleted = await resDeleted.json();
       if (resDeleted.ok && jsonDeleted.success) {
@@ -94,7 +92,6 @@ export default function AdminDashboard() {
     fetchRecords();
   }, []);
 
-  // Delete handler
   const handleDelete = async (id: string | number, name: string) => {
     if (!confirm(`Are you sure you want to move RSVP for "${name}" to Deleted History?`)) return;
 
@@ -113,7 +110,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Restore handler
   const handleRestore = async (id: string | number, name: string) => {
     try {
       const res = await fetch("/api/rsvp", {
@@ -134,7 +130,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Permanent delete handler
   const handlePermanentDelete = async (id: string | number, name: string) => {
     if (!confirm(`Are you sure you want to PERMANENTLY delete the RSVP for "${name}"? This action cannot be undone.`)) return;
 
@@ -153,7 +148,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Compute key stats for active records
   const stats = useMemo(() => {
     const totalResponses = activeRecords.length;
     const totalAttendingEntries = activeRecords.filter((r) => r.attending === "accepts");
@@ -164,7 +158,6 @@ export default function AdminDashboard() {
       0
     );
 
-    // Food Preference breakdown
     const mealCounts: Record<string, number> = {};
     activeRecords.forEach((r) => {
       if (r.attending === "accepts") {
@@ -184,7 +177,6 @@ export default function AdminDashboard() {
       }
     });
 
-    // Party size breakdown
     const partySizes: Record<string, number> = {
       "1 Guest": 0,
       "2 Guests": 0,
@@ -208,7 +200,6 @@ export default function AdminDashboard() {
     };
   }, [activeRecords]);
 
-  // Compute SVG Pie Chart Slices
   const pieSlices = useMemo(() => {
     const entries = Object.entries(stats.mealCounts);
     const totalMeals = entries.reduce((sum, [_, count]) => sum + count, 0);
@@ -240,7 +231,6 @@ export default function AdminDashboard() {
     });
   }, [stats.mealCounts]);
 
-  // Filter records for table view
   const currentList = activeTab === "active" ? activeRecords : deletedRecords;
   const filteredRecords = useMemo(() => {
     return currentList.filter((r) => {
@@ -301,10 +291,10 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-[var(--color-ivory)] text-[var(--color-espresso)] p-4 md:p-8 font-serif z-50">
+    <div className="min-h-screen w-full bg-[var(--color-ivory)] text-[var(--color-espresso)] font-serif">
       {!isAuthenticated ? (
-        <div className="flex items-center justify-center min-h-[80vh]">
-          <div className="max-w-sm w-full p-8 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-lg text-center">
+        <div className="flex items-center justify-center min-h-screen p-4">
+          <div className="w-full max-w-sm p-6 md:p-8 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-lg text-center">
             <div className="mb-4 text-3xl">🔒</div>
             <h2 className="text-2xl font-serif text-[var(--color-gold-brown)] mb-1">Admin Dashboard</h2>
             <p className="text-xs text-[var(--color-soft-taupe)] mb-6">Please enter the password to access this area.</p>
@@ -315,7 +305,7 @@ export default function AdminDashboard() {
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 placeholder="Enter password"
-                className="w-full px-4 py-3 rounded-lg border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-2 focus:ring-[var(--color-gold-brown)] text-center font-sans"
+                className="w-full px-4 py-3 rounded-lg border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-2 focus:ring-[var(--color-gold-brown)] text-center font-sans text-sm md:text-base"
                 autoFocus
               />
               {error && (
@@ -341,7 +331,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       ) : (
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6 md:space-y-8">
           {/* Notification Toast */}
           {notification && (
             <div
@@ -357,110 +347,108 @@ export default function AdminDashboard() {
           )}
 
           {/* Navigation / Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-champagne)] pb-6">
-            <div>
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-4 pb-6 border-b border-[var(--color-champagne)]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
                 <Link
                   href="/"
                   className="text-xs uppercase tracking-widest font-sans font-bold text-[var(--color-gold-brown)] hover:underline"
                 >
                   ← Back to Wedding Site
                 </Link>
+                <h1 className="text-2xl md:text-4xl font-serif text-[var(--color-gold-brown)] mt-1">
+                  Guest RSVP Analytics & Management Dashboard
+                </h1>
+                <p className="text-xs text-[var(--color-soft-taupe)] font-sans mt-0.5">
+                  Live Overview, Food Preferences, Duplicate Prevention & Deleted History
+                </p>
               </div>
-              <h1 className="text-3xl md:text-4xl font-serif text-[var(--color-gold-brown)] mt-1">
-                Guest RSVP Analytics & Management Dashboard
-              </h1>
-              <p className="text-xs text-[var(--color-soft-taupe)] font-sans mt-0.5">
-                Live Overview, Food Preferences, Duplicate Prevention & Deleted History
-              </p>
-            </div>
 
-            <div className="flex items-center gap-3 font-sans">
-              <button
-                onClick={fetchRecords}
-                className="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] transition"
-              >
-                🔄 Refresh
-              </button>
-              <button
-                onClick={exportCSV}
-                className="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full text-[var(--color-ivory)] shadow transition hover:opacity-90"
-                style={{ backgroundColor: "var(--color-gold-brown)" }}
-              >
-                📥 Export CSV
-              </button>
+              <div className="flex items-center gap-3 font-sans">
+                <button
+                  onClick={fetchRecords}
+                  className="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] transition whitespace-nowrap"
+                >
+                  🔄 Refresh
+                </button>
+                <button
+                  onClick={exportCSV}
+                  className="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full text-[var(--color-ivory)] shadow transition hover:opacity-90 whitespace-nowrap"
+                  style={{ backgroundColor: "var(--color-gold-brown)" }}
+                >
+                  📥 Export CSV
+                </button>
+              </div>
             </div>
           </div>
 
           {/* KPI Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
-            <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-              <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 font-sans">
+            <div className="p-4 md:p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <p className="text-[10px] md:text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
                 Total RSVPs Received
               </p>
-              <p className="text-3xl font-serif font-bold text-[var(--color-gold-brown)] mt-2">
+              <p className="text-2xl md:text-3xl font-serif font-bold text-[var(--color-gold-brown)] mt-2">
                 {stats.totalResponses}
               </p>
-              <p className="text-[11px] text-[var(--color-espresso)] mt-1">Active party responses</p>
+              <p className="text-[10px] md:text-[11px] text-[var(--color-espresso)] mt-1">Active party responses</p>
             </div>
 
-            <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-              <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
+            <div className="p-4 md:p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <p className="text-[10px] md:text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
                 Total Attending Guests
               </p>
-              <p className="text-3xl font-serif font-bold text-emerald-700 mt-2">
+              <p className="text-2xl md:text-3xl font-serif font-bold text-emerald-700 mt-2">
                 {stats.totalAttendingGuests}
               </p>
-              <p className="text-[11px] text-emerald-800 mt-1 font-medium">Confirmed attendees</p>
+              <p className="text-[10px] md:text-[11px] text-emerald-800 mt-1 font-medium">Confirmed attendees</p>
             </div>
 
-            <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-              <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
+            <div className="p-4 md:p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <p className="text-[10px] md:text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
                 Regretfully Declined
               </p>
-              <p className="text-3xl font-serif font-bold text-rose-700 mt-2">
+              <p className="text-2xl md:text-3xl font-serif font-bold text-rose-700 mt-2">
                 {stats.totalDeclined}
               </p>
-              <p className="text-[11px] text-rose-800 mt-1 font-medium">Unable to attend</p>
+              <p className="text-[10px] md:text-[11px] text-rose-800 mt-1 font-medium">Unable to attend</p>
             </div>
 
-            <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-              <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
+            <div className="p-4 md:p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <p className="text-[10px] md:text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
                 Deleted History Items
               </p>
-              <p className="text-3xl font-serif font-bold text-amber-700 mt-2">
+              <p className="text-2xl md:text-3xl font-serif font-bold text-amber-700 mt-2">
                 {deletedRecords.length}
               </p>
-              <p className="text-[11px] text-amber-800 mt-1 font-medium">Available to restore</p>
+              <p className="text-[10px] md:text-[11px] text-amber-800 mt-1 font-medium">Available to restore</p>
             </div>
           </div>
 
           {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Chart 1: Food Preference Pie Chart */}
-            <div className="p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-              <div className="flex items-center justify-between mb-4 border-b border-[var(--color-champagne)] pb-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <div className="p-4 md:p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-[var(--color-champagne)] pb-3">
                 <div>
-                  <h2 className="text-xl font-serif text-[var(--color-gold-brown)] font-bold">
+                  <h2 className="text-lg md:text-xl font-serif text-[var(--color-gold-brown)] font-bold">
                     Food Preferences Breakdown
                   </h2>
-                  <p className="text-xs text-[var(--color-soft-taupe)] font-sans">
+                  <p className="text-[10px] md:text-xs text-[var(--color-soft-taupe)] font-sans">
                     Distribution of guest meal choices
                   </p>
                 </div>
-                <span className="text-xs font-sans px-2.5 py-1 rounded bg-[var(--color-ecru)] text-[var(--color-gold-brown)] font-semibold">
+                <span className="text-[10px] md:text-xs font-sans px-2.5 py-1 rounded bg-[var(--color-ecru)] text-[var(--color-gold-brown)] font-semibold whitespace-nowrap self-start">
                   Pie Chart
                 </span>
               </div>
 
               {pieSlices.length === 0 ? (
-                <div className="py-12 text-center text-xs text-[var(--color-soft-taupe)] font-sans">
+                <div className="py-8 md:py-12 text-center text-xs text-[var(--color-soft-taupe)] font-sans">
                   No food choices submitted yet.
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-8 py-4">
-                  {/* SVG Pie Chart */}
-                  <div className="relative w-48 h-48 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-8 py-4">
+                  <div className="relative w-40 h-40 md:w-48 md:h-48 flex-shrink-0">
                     <svg viewBox="-1 -1 2 2" className="w-full h-full transform -rotate-90">
                       {pieSlices.map((slice, i) => (
                         <path
@@ -475,24 +463,23 @@ export default function AdminDashboard() {
                     </svg>
                   </div>
 
-                  {/* Legend & Breakdown list */}
-                  <div className="space-y-2.5 w-full font-sans text-xs">
+                  <div className="space-y-2 w-full font-sans text-xs">
                     {pieSlices.map((slice, i) => (
-                      <div key={i} className="flex items-center justify-between">
+                      <div key={i} className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <span
-                            className="w-3 h-3 rounded-full inline-block"
+                            className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full inline-block flex-shrink-0"
                             style={{ backgroundColor: slice.color }}
                           />
-                          <span className="font-semibold text-[var(--color-espresso)]">
+                          <span className="font-semibold text-[var(--color-espresso)] text-[11px] md:text-xs">
                             {slice.meal}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-[var(--color-gold-brown)]">
+                        <div className="flex items-center gap-1.5 md:gap-2">
+                          <span className="font-bold text-[var(--color-gold-brown)] text-[11px] md:text-xs">
                             {slice.count} {slice.count === 1 ? "guest" : "guests"}
                           </span>
-                          <span className="text-[var(--color-soft-taupe)]">
+                          <span className="text-[var(--color-soft-taupe)] text-[10px] md:text-xs">
                             ({slice.percentage}%)
                           </span>
                         </div>
@@ -503,35 +490,34 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* Chart 2: Party Size Distribution Bar Chart */}
-            <div className="p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-              <div className="flex items-center justify-between mb-4 border-b border-[var(--color-champagne)] pb-3">
+            <div className="p-4 md:p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 border-b border-[var(--color-champagne)] pb-3">
                 <div>
-                  <h2 className="text-xl font-serif text-[var(--color-gold-brown)] font-bold">
+                  <h2 className="text-lg md:text-xl font-serif text-[var(--color-gold-brown)] font-bold">
                     Party Size Distribution
                   </h2>
-                  <p className="text-xs text-[var(--color-soft-taupe)] font-sans">
+                  <p className="text-[10px] md:text-xs text-[var(--color-soft-taupe)] font-sans">
                     Number of guests per attending party
                   </p>
                 </div>
-                <span className="text-xs font-sans px-2.5 py-1 rounded bg-[var(--color-ecru)] text-[var(--color-gold-brown)] font-semibold">
+                <span className="text-[10px] md:text-xs font-sans px-2.5 py-1 rounded bg-[var(--color-ecru)] text-[var(--color-gold-brown)] font-semibold whitespace-nowrap self-start">
                   Bar Chart
                 </span>
               </div>
 
-              <div className="py-6 space-y-4 font-sans">
+              <div className="py-4 md:py-6 space-y-3 md:space-y-4 font-sans">
                 {Object.entries(stats.partySizes).map(([group, count]) => {
                   const maxCount = Math.max(...Object.values(stats.partySizes), 1);
                   const percent = (count / maxCount) * 100;
                   return (
                     <div key={group} className="space-y-1">
-                      <div className="flex justify-between text-xs font-semibold text-[var(--color-espresso)]">
+                      <div className="flex justify-between text-[11px] md:text-xs font-semibold text-[var(--color-espresso)]">
                         <span>{group}</span>
                         <span>
                           {count} {count === 1 ? "party" : "parties"}
                         </span>
                       </div>
-                      <div className="w-full h-3 rounded-full bg-[var(--color-champagne)]/40 overflow-hidden">
+                      <div className="w-full h-2.5 md:h-3 rounded-full bg-[var(--color-champagne)]/40 overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
@@ -548,156 +534,158 @@ export default function AdminDashboard() {
           </div>
 
           {/* Detailed Guest Directory Table & Deleted Recycle Bin */}
-          <div className="p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm space-y-4">
-            {/* Tabs header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-champagne)] pb-4 font-sans">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setActiveTab("active")}
-                  className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition ${
-                    activeTab === "active"
-                      ? "bg-[var(--color-gold-brown)] text-white shadow"
-                      : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
-                  }`}
-                >
-                  📋 Active RSVPs ({activeRecords.length})
-                </button>
+          <div className="p-4 md:p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm space-y-4">
+            <div className="flex flex-col gap-4 pb-4 border-b border-[var(--color-champagne)]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => setActiveTab("active")}
+                    className={`px-3 py-2 text-[11px] md:text-xs font-bold uppercase tracking-wider rounded-lg transition whitespace-nowrap ${
+                      activeTab === "active"
+                        ? "bg-[var(--color-gold-brown)] text-white shadow"
+                        : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
+                    }`}
+                  >
+                    📋 Active RSVPs ({activeRecords.length})
+                  </button>
 
-                <button
-                  onClick={() => setActiveTab("deleted")}
-                  className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition ${
-                    activeTab === "deleted"
-                      ? "bg-amber-800 text-white shadow"
-                      : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
-                  }`}
-                >
-                  🗑️ Deleted History ({deletedRecords.length})
-                </button>
+                  <button
+                    onClick={() => setActiveTab("deleted")}
+                    className={`px-3 py-2 text-[11px] md:text-xs font-bold uppercase tracking-wider rounded-lg transition whitespace-nowrap ${
+                      activeTab === "deleted"
+                        ? "bg-amber-800 text-white shadow"
+                        : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
+                    }`}
+                  >
+                    🗑️ Deleted History ({deletedRecords.length})
+                  </button>
+                </div>
+
+                <input
+                  type="text"
+                  placeholder="Search name, meal, note..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="px-3 py-2 text-xs rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] w-full sm:w-auto"
+                />
               </div>
-
-              {/* Search */}
-              <input
-                type="text"
-                placeholder="Search name, meal, note..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="px-3 py-1.5 text-xs rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)]"
-              />
             </div>
 
             {loading ? (
-              <div className="py-12 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
+              <div className="py-8 md:py-12 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
                 Loading RSVP records...
               </div>
             ) : filteredRecords.length === 0 ? (
-              <div className="py-12 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
+              <div className="py-8 md:py-12 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
                 {activeTab === "active"
                   ? "No active guest records found."
                   : "No deleted records in history."}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-sans border-collapse">
-                  <thead>
-                    <tr className="border-b border-[var(--color-champagne)] text-[var(--color-gold-brown)] uppercase tracking-wider font-semibold">
-                      <th className="py-3 px-3">Primary Contact</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-3">Party Size</th>
-                      <th className="py-3 px-3">Guest List & Meal Choices</th>
-                      <th className="py-3 px-3">Dietary / Notes</th>
-                      <th className="py-3 px-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--color-champagne)]/40">
-                    {filteredRecords.map((r) => (
-                      <tr key={r.id} className="hover:bg-[var(--color-ivory)] transition">
-                        <td className="py-3 px-3 font-semibold text-[var(--color-espresso)]">
-                          <div>{r.full_name}</div>
-                          {r.email && (
-                            <div className="text-[10px] text-[var(--color-soft-taupe)] font-normal">
-                              {r.email}
-                            </div>
-                          )}
-                        </td>
-                        <td className="py-3 px-3">
-                          <span
-                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              r.attending === "accepts"
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-rose-100 text-rose-800"
-                            }`}
-                          >
-                            {r.attending === "accepts" ? "Attending" : "Declined"}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 font-bold text-[var(--color-gold-brown)]">
-                          {r.guest_count} {r.guest_count === 1 ? "Guest" : "Guests"}
-                        </td>
-                        <td className="py-3 px-3">
-                          {r.guest_details && r.guest_details.length > 0 ? (
-                            <ul className="space-y-1">
-                              {r.guest_details.map((g, gIdx) => (
-                                <li key={gIdx} className="flex items-center gap-1.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold-brown)] inline-block" />
-                                  <span className="font-medium text-[var(--color-espresso)]">
-                                    {g.name}:
-                                  </span>
-                                  <span className="text-[var(--color-soft-taupe)] font-semibold">
-                                    {g.meal}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <span className="text-[var(--color-soft-taupe)] italic">
-                              Main Choice: {r.meal_preference}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3 max-w-xs">
-                          {r.dietary_restrictions && (
-                            <div className="text-[11px] text-amber-900 font-semibold mb-1">
-                              ⚠️ {r.dietary_restrictions}
-                            </div>
-                          )}
-                          {r.message && (
-                            <div className="text-[11px] text-[var(--color-espresso)] italic">
-                              &quot;{r.message}&quot;
-                            </div>
-                          )}
-                        </td>
-                        <td className="py-3 px-3 text-right">
-                          {activeTab === "active" ? (
-                            <button
-                              onClick={() => handleDelete(r.id, r.full_name)}
-                              className="px-3 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[11px] transition"
-                              title="Move to Deleted History"
-                            >
-                              🗑️ Delete
-                            </button>
-                          ) : (
-                            <div className="flex flex-col gap-2">
-                              <button
-                                onClick={() => handleRestore(r.id, r.full_name)}
-                                className="px-3 py-1 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[11px] transition"
-                                title="Restore back to active RSVPs"
-                              >
-                                ↺ Restore
-                              </button>
-                              <button
-                                onClick={() => handlePermanentDelete(r.id, r.full_name)}
-                                className="px-3 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[11px] transition"
-                                title="Permanently Delete"
-                              >
-                                ✕ Delete
-                              </button>
-                            </div>
-                          )}
-                        </td>
+              <div className="overflow-x-auto -mx-4 md:mx-0">
+                <div className="inline-block min-w-full px-4 md:px-0">
+                  <table className="w-full text-left text-[10px] md:text-xs font-sans border-collapse">
+                    <thead>
+                      <tr className="border-b border-[var(--color-champagne)] text-[var(--color-gold-brown)] uppercase tracking-wider font-semibold">
+                        <th className="py-3 px-2 md:px-3 text-left">Primary Contact</th>
+                        <th className="py-3 px-2 md:px-3 text-center">Status</th>
+                        <th className="py-3 px-2 md:px-3 text-center">Guests</th>
+                        <th className="py-3 px-2 md:px-3 text-left">Guest List & Meals</th>
+                        <th className="py-3 px-2 md:px-3 text-left">Dietary / Notes</th>
+                        <th className="py-3 px-2 md:px-3 text-right">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--color-champagne)]/40">
+                      {filteredRecords.map((r) => (
+                        <tr key={r.id} className="hover:bg-[var(--color-ivory)] transition">
+                          <td className="py-3 px-2 md:px-3 font-semibold text-[var(--color-espresso)]">
+                            <div className="text-[11px] md:text-xs">{r.full_name}</div>
+                            {r.email && (
+                              <div className="text-[10px] text-[var(--color-soft-taupe)] font-normal truncate max-w-[120px] md:max-w-none">
+                                {r.email}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-2 md:px-3 text-center">
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${
+                                r.attending === "accepts"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-rose-100 text-rose-800"
+                              }`}
+                            >
+                              {r.attending === "accepts" ? "Attending" : "Declined"}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 md:px-3 text-center font-bold text-[var(--color-gold-brown)] text-[11px] md:text-xs">
+                            {r.guest_count}
+                          </td>
+                          <td className="py-3 px-2 md:px-3">
+                            {r.guest_details && r.guest_details.length > 0 ? (
+                              <ul className="space-y-1">
+                                {r.guest_details.map((g, gIdx) => (
+                                  <li key={gIdx} className="flex items-center gap-1 flex-wrap">
+                                    <span className="w-1 h-1 rounded-full bg-[var(--color-gold-brown)] inline-block flex-shrink-0" />
+                                    <span className="font-medium text-[var(--color-espresso)] text-[10px] md:text-xs">
+                                      {g.name}:
+                                    </span>
+                                    <span className="text-[var(--color-soft-taupe)] font-semibold text-[10px] md:text-xs">
+                                      {g.meal}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <span className="text-[var(--color-soft-taupe)] italic text-[10px] md:text-xs">
+                                {r.meal_preference}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-2 md:px-3">
+                            {r.dietary_restrictions && (
+                              <div className="text-[10px] md:text-[11px] text-amber-900 font-semibold mb-0.5">
+                                ⚠️ {r.dietary_restrictions}
+                              </div>
+                            )}
+                            {r.message && (
+                              <div className="text-[10px] md:text-[11px] text-[var(--color-espresso)] italic line-clamp-2">
+                                &quot;{r.message}&quot;
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-2 md:px-3 text-right">
+                            {activeTab === "active" ? (
+                              <button
+                                onClick={() => handleDelete(r.id, r.full_name)}
+                                className="px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
+                                title="Move to Deleted History"
+                              >
+                                🗑️ Delete
+                              </button>
+                            ) : (
+                              <div className="flex flex-col gap-1.5 items-end">
+                                <button
+                                  onClick={() => handleRestore(r.id, r.full_name)}
+                                  className="px-2 py-1 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
+                                  title="Restore back to active RSVPs"
+                                >
+                                  ↺ Restore
+                                </button>
+                                <button
+                                  onClick={() => handlePermanentDelete(r.id, r.full_name)}
+                                  className="px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
+                                  title="Permanently Delete"
+                                >
+                                  ✕ Delete
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
