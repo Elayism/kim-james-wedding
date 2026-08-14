@@ -1,24 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const videoRef = useRef(null);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = true;
-      videoRef.current.volume = 0;
-    }
-  }, []);
-
   const handleTap = () => {
-    if (isPlaying) return;
-    setIsPlaying(true);
+    if (hasInteracted) return;
+    setHasInteracted(true);
 
-    // Call background audio play SYNCHRONOUSLY within the direct user gesture stack
     if (onPlayAudio) {
       onPlayAudio();
     }
@@ -28,18 +20,25 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
       videoRef.current.volume = 0;
       videoRef.current.play().catch((err) => {
         console.error("Video play failed", err);
+        setTimeout(() => {
+          if (onOpenComplete) onOpenComplete();
+        }, 800);
       });
     }
   };
 
   const handleVideoEnded = () => {
-    // Start the fade to white transition
     setIsEnding(true);
-    
-    // Wait for the transition to finish (1s) before calling onComplete
     setTimeout(() => {
       if (onOpenComplete) onOpenComplete();
     }, 1000);
+  };
+
+  const handleVideoError = () => {
+    setIsEnding(true);
+    setTimeout(() => {
+      if (onOpenComplete) onOpenComplete();
+    }, 800);
   };
 
   return (
@@ -54,14 +53,18 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
         muted
         defaultMuted
         playsInline
+        preload="auto"
+        poster="/images/hero-bg.jpg"
         onEnded={handleVideoEnded}
+        onError={handleVideoError}
         className="absolute inset-0 w-full h-full object-cover"
       />
       
       {/* Tappable overlay for the entire viewport */}
-      <div 
-        className="absolute inset-0 z-10 cursor-pointer"
+      <button
+        className={`absolute inset-0 z-10 cursor-pointer bg-transparent border-none p-0 ${hasInteracted ? 'pointer-events-none' : ''}`}
         onClick={handleTap}
+        onTouchEnd={handleTap}
         aria-label="Tap to open invitation"
       />
     </div>

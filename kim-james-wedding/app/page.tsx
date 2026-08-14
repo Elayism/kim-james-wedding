@@ -91,15 +91,13 @@ export default function Home() {
       />
 
       <div
-        className="snap-y snap-proximity overflow-y-scroll w-full"
-        style={{ height: "100vh" }}
+        className="snap-y snap-proximity scroll-container w-full"
       >
         {/* Envelope Section (Unmounts when complete) */}
         {!showSite && (
           <section
             id="envelope"
-            className="snap-start w-full"
-            style={{ height: "100vh" }}
+            className="snap-start snap-section w-full"
           >
             <EnvelopeIntro 
               onOpenComplete={handleOpenComplete} 
@@ -121,8 +119,7 @@ export default function Home() {
               {/* 2. Hero Section */}
               <section
                 id="hero"
-                className="snap-start w-full"
-                style={{ height: "100vh" }}
+                className="snap-start snap-section w-full"
               >
                 <Hero />
               </section>
@@ -130,8 +127,7 @@ export default function Home() {
               {/* 3. Our Story Section */}
               <section
                 id="our-story"
-                className="snap-start w-full"
-                style={{ height: "100vh" }}
+                className="snap-start snap-section w-full"
               >
                 <OurStory />
               </section>
@@ -139,8 +135,7 @@ export default function Home() {
               {/* 4. Event Details Section */}
               <section
                 id="event-details"
-                className="snap-start w-full"
-                style={{ height: "100vh" }}
+                className="snap-start snap-section w-full"
               >
                 <EventDetails />
               </section>
@@ -148,8 +143,7 @@ export default function Home() {
               {/* 5. Dress Code Section */}
               <section
                 id="dress-code"
-                className="snap-start w-full"
-                style={{ height: "100vh" }}
+                className="snap-start snap-section w-full"
               >
                 <DressCode />
               </section>
@@ -157,11 +151,8 @@ export default function Home() {
               {/* 6. RSVP Section */}
               <section
                 id="rsvp"
-                className="snap-start w-full flex items-center justify-center py-12"
-                style={{
-                  height: "100vh",
-                  backgroundColor: "var(--color-ivory)",
-                }}
+                className="snap-start snap-section w-full flex items-center justify-center py-12"
+                style={{ backgroundColor: "var(--color-ivory)" }}
               >
                 <FadeInSection>
                   <RSVPForm />
@@ -171,8 +162,7 @@ export default function Home() {
               {/* 7. Gift Registry Section */}
               <section
                 id="gift-registry"
-                className="snap-start w-full"
-                style={{ height: "100vh" }}
+                className="snap-start snap-section w-full"
               >
                 <GiftRegistry />
               </section>
@@ -180,8 +170,7 @@ export default function Home() {
               {/* 8. Gallery Section */}
               <section
                 id="gallery"
-                className="snap-start w-full"
-                style={{ height: "100vh" }}
+                className="snap-start snap-section w-full"
               >
                 <Gallery />
               </section>
@@ -189,8 +178,7 @@ export default function Home() {
               {/* 9. Footer Section */}
               <section
                 id="footer"
-                className="snap-start w-full"
-                style={{ height: "100vh" }}
+                className="snap-start snap-section w-full"
               >
                 <Footer />
               </section>
