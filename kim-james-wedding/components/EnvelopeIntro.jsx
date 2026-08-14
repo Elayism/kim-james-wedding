@@ -1,20 +1,32 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const videoRef = useRef(null);
 
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = true;
+      videoRef.current.volume = 0;
+    }
+  }, []);
+
   const handleTap = () => {
     if (isPlaying) return;
-    
+    setIsPlaying(true);
+
+    // Call background audio play SYNCHRONOUSLY within the direct user gesture stack
+    if (onPlayAudio) {
+      onPlayAudio();
+    }
+
     if (videoRef.current) {
-      videoRef.current.play().then(() => {
-        setIsPlaying(true);
-        if (onPlayAudio) onPlayAudio();
-      }).catch((err) => {
+      videoRef.current.muted = true;
+      videoRef.current.volume = 0;
+      videoRef.current.play().catch((err) => {
         console.error("Video play failed", err);
       });
     }
@@ -40,6 +52,7 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
         ref={videoRef}
         src="/videos/envelope-open.mp4"
         muted
+        defaultMuted
         playsInline
         onEnded={handleVideoEnded}
         className="absolute inset-0 w-full h-full object-cover"

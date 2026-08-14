@@ -26,11 +26,18 @@ export default function Home() {
 
   const handlePlayAudio = () => {
     if (audioRef.current) {
-      audioRef.current.play().then(() => {
-        setIsPlaying(true);
-      }).catch((err) => {
-        console.error("Audio play failed:", err);
-      });
+      audioRef.current.muted = false;
+      audioRef.current.volume = 1.0;
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((err) => {
+            console.error("Audio play failed:", err);
+          });
+      }
     }
   };
 
@@ -40,11 +47,18 @@ export default function Home() {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().then(() => {
-        setIsPlaying(true);
-      }).catch((err) => {
-        console.error("Audio play failed:", err);
-      });
+      audioRef.current.muted = false;
+      audioRef.current.volume = 1.0;
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((err) => {
+            console.error("Audio play failed:", err);
+          });
+      }
     }
   };
 
@@ -73,6 +87,7 @@ export default function Home() {
         src="/audio/cant-help-falling.mp3"
         loop
         preload="auto"
+        playsInline
       />
 
       <div
