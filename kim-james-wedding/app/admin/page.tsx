@@ -33,12 +33,34 @@ const PIE_COLORS: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [error, setError] = useState("");
   const [activeRecords, setActiveRecords] = useState<RsvpRecord[]>([]);
   const [deletedRecords, setDeletedRecords] = useState<RsvpRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "info" } | null>(null);
+
+  useEffect(() => {
+    const auth = sessionStorage.getItem("admin_auth");
+    if (auth === "true") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === "wedding2027") {
+      sessionStorage.setItem("admin_auth", "true");
+      setIsAuthenticated(true);
+      setError("");
+    } else {
+      setError("Incorrect password. Please try again.");
+      setPasswordInput("");
+    }
+  };
 
   const showToast = (message: string, type: "success" | "info" = "success") => {
     setNotification({ message, type });
@@ -280,25 +302,35 @@ export default function AdminDashboard() {
 
   return (
     <div className="fixed inset-0 overflow-y-auto bg-[var(--color-ivory)] text-[var(--color-espresso)] p-4 md:p-8 font-serif z-50">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Notification Toast */}
-        {notification && (
-          <div
-            className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-xl text-xs font-sans font-semibold border flex items-center gap-2 ${
-              notification.type === "success"
-                ? "bg-emerald-900 text-emerald-100 border-emerald-700"
-                : "bg-amber-900 text-amber-100 border-amber-700"
-            }`}
-          >
-            <span>{notification.type === "success" ? "✅" : "ℹ️"}</span>
-            <span>{notification.message}</span>
-          </div>
-        )}
-
-        {/* Navigation / Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-champagne)] pb-6">
-          <div>
-            <div className="flex items-center gap-2">
+      {!isAuthenticated ? (
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="max-w-sm w-full p-8 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-lg text-center">
+            <div className="mb-4 text-3xl">🔒</div>
+            <h2 className="text-2xl font-serif text-[var(--color-gold-brown)] mb-1">Admin Dashboard</h2>
+            <p className="text-xs text-[var(--color-soft-taupe)] mb-6">Please enter the password to access this area.</p>
+            
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="Enter password"
+                className="w-full px-4 py-3 rounded-lg border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-2 focus:ring-[var(--color-gold-brown)] text-center font-sans"
+                autoFocus
+              />
+              {error && (
+                <p className="text-xs text-red-600 font-sans">{error}</p>
+              )}
+              <button
+                type="submit"
+                className="w-full py-3 rounded-lg text-sm font-sans font-semibold text-[var(--color-ivory)] shadow transition hover:opacity-90"
+                style={{ backgroundColor: "var(--color-gold-brown)" }}
+              >
+                Unlock Dashboard
+              </button>
+            </form>
+            
+            <div className="mt-6 pt-4 border-t border-[var(--color-champagne)]">
               <Link
                 href="/"
                 className="text-xs uppercase tracking-widest font-sans font-bold text-[var(--color-gold-brown)] hover:underline"
@@ -306,341 +338,371 @@ export default function AdminDashboard() {
                 ← Back to Wedding Site
               </Link>
             </div>
-            <h1 className="text-3xl md:text-4xl font-serif text-[var(--color-gold-brown)] mt-1">
-              Guest RSVP Analytics & Management Dashboard
-            </h1>
-            <p className="text-xs text-[var(--color-soft-taupe)] font-sans mt-0.5">
-              Live Overview, Food Preferences, Duplicate Prevention & Deleted History
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 font-sans">
-            <button
-              onClick={fetchRecords}
-              className="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] transition"
-            >
-              🔄 Refresh
-            </button>
-            <button
-              onClick={exportCSV}
-              className="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full text-[var(--color-ivory)] shadow transition hover:opacity-90"
-              style={{ backgroundColor: "var(--color-gold-brown)" }}
-            >
-              📥 Export CSV
-            </button>
           </div>
         </div>
+      ) : (
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Notification Toast */}
+          {notification && (
+            <div
+              className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-xl text-xs font-sans font-semibold border flex items-center gap-2 ${
+                notification.type === "success"
+                  ? "bg-emerald-900 text-emerald-100 border-emerald-700"
+                  : "bg-amber-900 text-amber-100 border-amber-700"
+              }`}
+            >
+              <span>{notification.type === "success" ? "✅" : "ℹ️"}</span>
+              <span>{notification.message}</span>
+            </div>
+          )}
 
-        {/* KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
-          <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
-              Total RSVPs Received
-            </p>
-            <p className="text-3xl font-serif font-bold text-[var(--color-gold-brown)] mt-2">
-              {stats.totalResponses}
-            </p>
-            <p className="text-[11px] text-[var(--color-espresso)] mt-1">Active party responses</p>
-          </div>
-
-          <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
-              Total Attending Guests
-            </p>
-            <p className="text-3xl font-serif font-bold text-emerald-700 mt-2">
-              {stats.totalAttendingGuests}
-            </p>
-            <p className="text-[11px] text-emerald-800 mt-1 font-medium">Confirmed attendees</p>
-          </div>
-
-          <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
-              Regretfully Declined
-            </p>
-            <p className="text-3xl font-serif font-bold text-rose-700 mt-2">
-              {stats.totalDeclined}
-            </p>
-            <p className="text-[11px] text-rose-800 mt-1 font-medium">Unable to attend</p>
-          </div>
-
-          <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
-              Deleted History Items
-            </p>
-            <p className="text-3xl font-serif font-bold text-amber-700 mt-2">
-              {deletedRecords.length}
-            </p>
-            <p className="text-[11px] text-amber-800 mt-1 font-medium">Available to restore</p>
-          </div>
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Chart 1: Food Preference Pie Chart */}
-          <div className="p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-            <div className="flex items-center justify-between mb-4 border-b border-[var(--color-champagne)] pb-3">
-              <div>
-                <h2 className="text-xl font-serif text-[var(--color-gold-brown)] font-bold">
-                  Food Preferences Breakdown
-                </h2>
-                <p className="text-xs text-[var(--color-soft-taupe)] font-sans">
-                  Distribution of guest meal choices
-                </p>
+          {/* Navigation / Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-champagne)] pb-6">
+            <div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/"
+                  className="text-xs uppercase tracking-widest font-sans font-bold text-[var(--color-gold-brown)] hover:underline"
+                >
+                  ← Back to Wedding Site
+                </Link>
               </div>
-              <span className="text-xs font-sans px-2.5 py-1 rounded bg-[var(--color-ecru)] text-[var(--color-gold-brown)] font-semibold">
-                Pie Chart
-              </span>
+              <h1 className="text-3xl md:text-4xl font-serif text-[var(--color-gold-brown)] mt-1">
+                Guest RSVP Analytics & Management Dashboard
+              </h1>
+              <p className="text-xs text-[var(--color-soft-taupe)] font-sans mt-0.5">
+                Live Overview, Food Preferences, Duplicate Prevention & Deleted History
+              </p>
             </div>
 
-            {pieSlices.length === 0 ? (
-              <div className="py-12 text-center text-xs text-[var(--color-soft-taupe)] font-sans">
-                No food choices submitted yet.
-              </div>
-            ) : (
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-8 py-4">
-                {/* SVG Pie Chart */}
-                <div className="relative w-48 h-48 flex-shrink-0">
-                  <svg viewBox="-1 -1 2 2" className="w-full h-full transform -rotate-90">
-                    {pieSlices.map((slice, i) => (
-                      <path
-                        key={i}
-                        d={slice.pathData}
-                        fill={slice.color}
-                        className="transition-all duration-300 hover:opacity-85 cursor-pointer"
-                      >
-                        <title>{`${slice.meal}: ${slice.count} guests (${slice.percentage}%)`}</title>
-                      </path>
-                    ))}
-                  </svg>
-                </div>
+            <div className="flex items-center gap-3 font-sans">
+              <button
+                onClick={fetchRecords}
+                className="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] transition"
+              >
+                🔄 Refresh
+              </button>
+              <button
+                onClick={exportCSV}
+                className="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded-full text-[var(--color-ivory)] shadow transition hover:opacity-90"
+                style={{ backgroundColor: "var(--color-gold-brown)" }}
+              >
+                📥 Export CSV
+              </button>
+            </div>
+          </div>
 
-                {/* Legend & Breakdown list */}
-                <div className="space-y-2.5 w-full font-sans text-xs">
-                  {pieSlices.map((slice, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-3 h-3 rounded-full inline-block"
-                          style={{ backgroundColor: slice.color }}
-                        />
-                        <span className="font-semibold text-[var(--color-espresso)]">
-                          {slice.meal}
+          {/* KPI Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-sans">
+            <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
+                Total RSVPs Received
+              </p>
+              <p className="text-3xl font-serif font-bold text-[var(--color-gold-brown)] mt-2">
+                {stats.totalResponses}
+              </p>
+              <p className="text-[11px] text-[var(--color-espresso)] mt-1">Active party responses</p>
+            </div>
+
+            <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
+                Total Attending Guests
+              </p>
+              <p className="text-3xl font-serif font-bold text-emerald-700 mt-2">
+                {stats.totalAttendingGuests}
+              </p>
+              <p className="text-[11px] text-emerald-800 mt-1 font-medium">Confirmed attendees</p>
+            </div>
+
+            <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
+                Regretfully Declined
+              </p>
+              <p className="text-3xl font-serif font-bold text-rose-700 mt-2">
+                {stats.totalDeclined}
+              </p>
+              <p className="text-[11px] text-rose-800 mt-1 font-medium">Unable to attend</p>
+            </div>
+
+            <div className="p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <p className="text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
+                Deleted History Items
+              </p>
+              <p className="text-3xl font-serif font-bold text-amber-700 mt-2">
+                {deletedRecords.length}
+              </p>
+              <p className="text-[11px] text-amber-800 mt-1 font-medium">Available to restore</p>
+            </div>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Chart 1: Food Preference Pie Chart */}
+            <div className="p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <div className="flex items-center justify-between mb-4 border-b border-[var(--color-champagne)] pb-3">
+                <div>
+                  <h2 className="text-xl font-serif text-[var(--color-gold-brown)] font-bold">
+                    Food Preferences Breakdown
+                  </h2>
+                  <p className="text-xs text-[var(--color-soft-taupe)] font-sans">
+                    Distribution of guest meal choices
+                  </p>
+                </div>
+                <span className="text-xs font-sans px-2.5 py-1 rounded bg-[var(--color-ecru)] text-[var(--color-gold-brown)] font-semibold">
+                  Pie Chart
+                </span>
+              </div>
+
+              {pieSlices.length === 0 ? (
+                <div className="py-12 text-center text-xs text-[var(--color-soft-taupe)] font-sans">
+                  No food choices submitted yet.
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-8 py-4">
+                  {/* SVG Pie Chart */}
+                  <div className="relative w-48 h-48 flex-shrink-0">
+                    <svg viewBox="-1 -1 2 2" className="w-full h-full transform -rotate-90">
+                      {pieSlices.map((slice, i) => (
+                        <path
+                          key={i}
+                          d={slice.pathData}
+                          fill={slice.color}
+                          className="transition-all duration-300 hover:opacity-85 cursor-pointer"
+                        >
+                          <title>{`${slice.meal}: ${slice.count} guests (${slice.percentage}%)`}</title>
+                        </path>
+                      ))}
+                    </svg>
+                  </div>
+
+                  {/* Legend & Breakdown list */}
+                  <div className="space-y-2.5 w-full font-sans text-xs">
+                    {pieSlices.map((slice, i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-3 h-3 rounded-full inline-block"
+                            style={{ backgroundColor: slice.color }}
+                          />
+                          <span className="font-semibold text-[var(--color-espresso)]">
+                            {slice.meal}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-[var(--color-gold-brown)]">
+                            {slice.count} {slice.count === 1 ? "guest" : "guests"}
+                          </span>
+                          <span className="text-[var(--color-soft-taupe)]">
+                            ({slice.percentage}%)
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Chart 2: Party Size Distribution Bar Chart */}
+            <div className="p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
+              <div className="flex items-center justify-between mb-4 border-b border-[var(--color-champagne)] pb-3">
+                <div>
+                  <h2 className="text-xl font-serif text-[var(--color-gold-brown)] font-bold">
+                    Party Size Distribution
+                  </h2>
+                  <p className="text-xs text-[var(--color-soft-taupe)] font-sans">
+                    Number of guests per attending party
+                  </p>
+                </div>
+                <span className="text-xs font-sans px-2.5 py-1 rounded bg-[var(--color-ecru)] text-[var(--color-gold-brown)] font-semibold">
+                  Bar Chart
+                </span>
+              </div>
+
+              <div className="py-6 space-y-4 font-sans">
+                {Object.entries(stats.partySizes).map(([group, count]) => {
+                  const maxCount = Math.max(...Object.values(stats.partySizes), 1);
+                  const percent = (count / maxCount) * 100;
+                  return (
+                    <div key={group} className="space-y-1">
+                      <div className="flex justify-between text-xs font-semibold text-[var(--color-espresso)]">
+                        <span>{group}</span>
+                        <span>
+                          {count} {count === 1 ? "party" : "parties"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-[var(--color-gold-brown)]">
-                          {slice.count} {slice.count === 1 ? "guest" : "guests"}
-                        </span>
-                        <span className="text-[var(--color-soft-taupe)]">
-                          ({slice.percentage}%)
-                        </span>
+                      <div className="w-full h-3 rounded-full bg-[var(--color-champagne)]/40 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${percent}%`,
+                            backgroundColor: "var(--color-gold-brown)",
+                          }}
+                        />
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Detailed Guest Directory Table & Deleted Recycle Bin */}
+          <div className="p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm space-y-4">
+            {/* Tabs header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-champagne)] pb-4 font-sans">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab("active")}
+                  className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition ${
+                    activeTab === "active"
+                      ? "bg-[var(--color-gold-brown)] text-white shadow"
+                      : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
+                  }`}
+                >
+                  📋 Active RSVPs ({activeRecords.length})
+                </button>
+
+                <button
+                  onClick={() => setActiveTab("deleted")}
+                  className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition ${
+                    activeTab === "deleted"
+                      ? "bg-amber-800 text-white shadow"
+                      : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
+                  }`}
+                >
+                  🗑️ Deleted History ({deletedRecords.length})
+                </button>
+              </div>
+
+              {/* Search */}
+              <input
+                type="text"
+                placeholder="Search name, meal, note..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="px-3 py-1.5 text-xs rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)]"
+              />
+            </div>
+
+            {loading ? (
+              <div className="py-12 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
+                Loading RSVP records...
+              </div>
+            ) : filteredRecords.length === 0 ? (
+              <div className="py-12 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
+                {activeTab === "active"
+                  ? "No active guest records found."
+                  : "No deleted records in history."}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-sans border-collapse">
+                  <thead>
+                    <tr className="border-b border-[var(--color-champagne)] text-[var(--color-gold-brown)] uppercase tracking-wider font-semibold">
+                      <th className="py-3 px-3">Primary Contact</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-3">Party Size</th>
+                      <th className="py-3 px-3">Guest List & Meal Choices</th>
+                      <th className="py-3 px-3">Dietary / Notes</th>
+                      <th className="py-3 px-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-champagne)]/40">
+                    {filteredRecords.map((r) => (
+                      <tr key={r.id} className="hover:bg-[var(--color-ivory)] transition">
+                        <td className="py-3 px-3 font-semibold text-[var(--color-espresso)]">
+                          <div>{r.full_name}</div>
+                          {r.email && (
+                            <div className="text-[10px] text-[var(--color-soft-taupe)] font-normal">
+                              {r.email}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span
+                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              r.attending === "accepts"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-rose-100 text-rose-800"
+                            }`}
+                          >
+                            {r.attending === "accepts" ? "Attending" : "Declined"}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 font-bold text-[var(--color-gold-brown)]">
+                          {r.guest_count} {r.guest_count === 1 ? "Guest" : "Guests"}
+                        </td>
+                        <td className="py-3 px-3">
+                          {r.guest_details && r.guest_details.length > 0 ? (
+                            <ul className="space-y-1">
+                              {r.guest_details.map((g, gIdx) => (
+                                <li key={gIdx} className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold-brown)] inline-block" />
+                                  <span className="font-medium text-[var(--color-espresso)]">
+                                    {g.name}:
+                                  </span>
+                                  <span className="text-[var(--color-soft-taupe)] font-semibold">
+                                    {g.meal}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <span className="text-[var(--color-soft-taupe)] italic">
+                              Main Choice: {r.meal_preference}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 max-w-xs">
+                          {r.dietary_restrictions && (
+                            <div className="text-[11px] text-amber-900 font-semibold mb-1">
+                              ⚠️ {r.dietary_restrictions}
+                            </div>
+                          )}
+                          {r.message && (
+                            <div className="text-[11px] text-[var(--color-espresso)] italic">
+                              &quot;{r.message}&quot;
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          {activeTab === "active" ? (
+                            <button
+                              onClick={() => handleDelete(r.id, r.full_name)}
+                              className="px-3 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[11px] transition"
+                              title="Move to Deleted History"
+                            >
+                              🗑️ Delete
+                            </button>
+                          ) : (
+                            <div className="flex flex-col gap-2">
+                              <button
+                                onClick={() => handleRestore(r.id, r.full_name)}
+                                className="px-3 py-1 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[11px] transition"
+                                title="Restore back to active RSVPs"
+                              >
+                                ↺ Restore
+                              </button>
+                              <button
+                                onClick={() => handlePermanentDelete(r.id, r.full_name)}
+                                className="px-3 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[11px] transition"
+                                title="Permanently Delete"
+                              >
+                                ✕ Delete
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
-
-          {/* Chart 2: Party Size Distribution Bar Chart */}
-          <div className="p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
-            <div className="flex items-center justify-between mb-4 border-b border-[var(--color-champagne)] pb-3">
-              <div>
-                <h2 className="text-xl font-serif text-[var(--color-gold-brown)] font-bold">
-                  Party Size Distribution
-                </h2>
-                <p className="text-xs text-[var(--color-soft-taupe)] font-sans">
-                  Number of guests per attending party
-                </p>
-              </div>
-              <span className="text-xs font-sans px-2.5 py-1 rounded bg-[var(--color-ecru)] text-[var(--color-gold-brown)] font-semibold">
-                Bar Chart
-              </span>
-            </div>
-
-            <div className="py-6 space-y-4 font-sans">
-              {Object.entries(stats.partySizes).map(([group, count]) => {
-                const maxCount = Math.max(...Object.values(stats.partySizes), 1);
-                const percent = (count / maxCount) * 100;
-                return (
-                  <div key={group} className="space-y-1">
-                    <div className="flex justify-between text-xs font-semibold text-[var(--color-espresso)]">
-                      <span>{group}</span>
-                      <span>
-                        {count} {count === 1 ? "party" : "parties"}
-                      </span>
-                    </div>
-                    <div className="w-full h-3 rounded-full bg-[var(--color-champagne)]/40 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${percent}%`,
-                          backgroundColor: "var(--color-gold-brown)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
-
-        {/* Detailed Guest Directory Table & Deleted Recycle Bin */}
-        <div className="p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm space-y-4">
-          {/* Tabs header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-champagne)] pb-4 font-sans">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setActiveTab("active")}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition ${
-                  activeTab === "active"
-                    ? "bg-[var(--color-gold-brown)] text-white shadow"
-                    : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
-                }`}
-              >
-                📋 Active RSVPs ({activeRecords.length})
-              </button>
-
-              <button
-                onClick={() => setActiveTab("deleted")}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition ${
-                  activeTab === "deleted"
-                    ? "bg-amber-800 text-white shadow"
-                    : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
-                }`}
-              >
-                🗑️ Deleted History ({deletedRecords.length})
-              </button>
-            </div>
-
-            {/* Search */}
-            <input
-              type="text"
-              placeholder="Search name, meal, note..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="px-3 py-1.5 text-xs rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)]"
-            />
-          </div>
-
-          {loading ? (
-            <div className="py-12 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
-              Loading RSVP records...
-            </div>
-          ) : filteredRecords.length === 0 ? (
-            <div className="py-12 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
-              {activeTab === "active"
-                ? "No active guest records found."
-                : "No deleted records in history."}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-sans border-collapse">
-                <thead>
-                  <tr className="border-b border-[var(--color-champagne)] text-[var(--color-gold-brown)] uppercase tracking-wider font-semibold">
-                    <th className="py-3 px-3">Primary Contact</th>
-                    <th className="py-3 px-3">Status</th>
-                    <th className="py-3 px-3">Party Size</th>
-                    <th className="py-3 px-3">Guest List & Meal Choices</th>
-                    <th className="py-3 px-3">Dietary / Notes</th>
-                    <th className="py-3 px-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--color-champagne)]/40">
-                  {filteredRecords.map((r) => (
-                    <tr key={r.id} className="hover:bg-[var(--color-ivory)] transition">
-                      <td className="py-3 px-3 font-semibold text-[var(--color-espresso)]">
-                        <div>{r.full_name}</div>
-                        {r.email && (
-                          <div className="text-[10px] text-[var(--color-soft-taupe)] font-normal">
-                            {r.email}
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            r.attending === "accepts"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-rose-100 text-rose-800"
-                          }`}
-                        >
-                          {r.attending === "accepts" ? "Attending" : "Declined"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 font-bold text-[var(--color-gold-brown)]">
-                        {r.guest_count} {r.guest_count === 1 ? "Guest" : "Guests"}
-                      </td>
-                      <td className="py-3 px-3">
-                        {r.guest_details && r.guest_details.length > 0 ? (
-                          <ul className="space-y-1">
-                            {r.guest_details.map((g, gIdx) => (
-                              <li key={gIdx} className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-gold-brown)] inline-block" />
-                                <span className="font-medium text-[var(--color-espresso)]">
-                                  {g.name}:
-                                </span>
-                                <span className="text-[var(--color-soft-taupe)] font-semibold">
-                                  {g.meal}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <span className="text-[var(--color-soft-taupe)] italic">
-                            Main Choice: {r.meal_preference}
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 max-w-xs">
-                        {r.dietary_restrictions && (
-                          <div className="text-[11px] text-amber-900 font-semibold mb-1">
-                            ⚠️ {r.dietary_restrictions}
-                          </div>
-                        )}
-                        {r.message && (
-                          <div className="text-[11px] text-[var(--color-espresso)] italic">
-                            &quot;{r.message}&quot;
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        {activeTab === "active" ? (
-                          <button
-                            onClick={() => handleDelete(r.id, r.full_name)}
-                            className="px-3 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[11px] transition"
-                            title="Move to Deleted History"
-                          >
-                            🗑️ Delete
-                          </button>
-                        ) : (
-                          <div className="flex flex-col gap-2">
-                            <button
-                              onClick={() => handleRestore(r.id, r.full_name)}
-                              className="px-3 py-1 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[11px] transition"
-                              title="Restore back to active RSVPs"
-                            >
-                              ↺ Restore
-                            </button>
-                            <button
-                              onClick={() => handlePermanentDelete(r.id, r.full_name)}
-                              className="px-3 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[11px] transition"
-                              title="Permanently Delete"
-                            >
-                              ✕ Delete
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

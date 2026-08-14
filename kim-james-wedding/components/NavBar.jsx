@@ -142,6 +142,19 @@ export default function NavBar({ isPlaying, onToggleAudio }) {
                     </button>
                   ))}
                 </div>
+
+                <div className="mt-6 pt-4 border-t border-[var(--color-champagne)]">
+                  <a
+                    href="/admin"
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-sans font-semibold transition-all duration-200 hover:bg-[var(--color-champagne)]/40"
+                    style={{ color: "var(--color-soft-taupe)" }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.25h15.002c.966 0 1.75-.784 1.75-1.75V18a5.25 5.25 0 00-10.5 0v.75c0 .966.784 1.75 1.75 1.75H4.501z" />
+                    </svg>
+                    Admin Dashboard
+                  </a>
+                </div>
               </div>
 
               <div className="p-5 border-t border-[var(--color-champagne)]">

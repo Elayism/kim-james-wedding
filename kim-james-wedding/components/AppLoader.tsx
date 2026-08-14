@@ -4,13 +4,15 @@ import { useState } from "react";
 import LoadingScreen from "./LoadingScreen";
 
 export default function AppLoader({ children }: { children: React.ReactNode }) {
-  const [loaded, setLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <>
-      {!loaded && <LoadingScreen onLoaded={() => setLoaded(true)} />}
+      {isLoading && <LoadingScreen onLoaded={() => setIsLoading(false)} />}
       <div
-        className={`transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
+        className={`transition-all duration-700 ease-out ${
+          isLoading ? "blur-sm scale-[0.99]" : "blur-0 scale-100"
+        }`}
       >
         {children}
       </div>

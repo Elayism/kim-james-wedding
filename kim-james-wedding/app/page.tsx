@@ -62,7 +62,6 @@ export default function Home() {
     }
   };
 
-  // Sync state with audio element just in case it pauses unexpectedly
   useEffect(() => {
     const audioEl = audioRef.current;
     if (!audioEl) return;
@@ -90,102 +89,70 @@ export default function Home() {
         playsInline
       />
 
-      <div
-        className="snap-y snap-proximity scroll-container w-full"
-      >
-        {/* Envelope Section (Unmounts when complete) */}
-        {!showSite && (
-          <section
-            id="envelope"
-            className="snap-start snap-section w-full"
+      {/* Envelope Section (always rendered so it can be blurred during loading) */}
+      {!showSite && (
+        <section id="envelope" className="w-full">
+          <EnvelopeIntro 
+            onOpenComplete={handleOpenComplete} 
+            onPlayAudio={handlePlayAudio} 
+          />
+        </section>
+      )}
+
+      {/* Main Wedding Site Content */}
+      {showSite && (
+        <>
+          <NavBar isPlaying={isPlaying} onToggleAudio={toggleMusic} />
+          <FloatingPetals />
+          
+          <div
+            className="animate-fade-in transition-opacity duration-1000 opacity-0"
+            style={{ animation: "fadeIn 1s ease-in forwards" }}
           >
-            <EnvelopeIntro 
-              onOpenComplete={handleOpenComplete} 
-              onPlayAudio={handlePlayAudio} 
-            />
-          </section>
-        )}
+            {/* Hero Section */}
+            <section id="hero" className="w-full">
+              <Hero />
+            </section>
 
-        {/* Main Wedding Site Content (Fades in when showSite is true) */}
-        {showSite && (
-          <>
-            <NavBar isPlaying={isPlaying} onToggleAudio={toggleMusic} />
-            <FloatingPetals />
-            
-            <div
-              className="animate-fade-in transition-opacity duration-1000 opacity-0"
-              style={{ animation: "fadeIn 1s ease-in forwards" }}
-            >
-              {/* 2. Hero Section */}
-              <section
-                id="hero"
-                className="snap-start snap-section w-full"
-              >
-                <Hero />
-              </section>
+            {/* Our Story Section */}
+            <section id="our-story" className="py-24 md:py-32">
+              <OurStory />
+            </section>
 
-              {/* 3. Our Story Section */}
-              <section
-                id="our-story"
-                className="snap-start snap-section w-full"
-              >
-                <OurStory />
-              </section>
+            {/* Event Details Section */}
+            <section id="event-details" className="py-24 md:py-32">
+              <EventDetails />
+            </section>
 
-              {/* 4. Event Details Section */}
-              <section
-                id="event-details"
-                className="snap-start snap-section w-full"
-              >
-                <EventDetails />
-              </section>
+            {/* Dress Code Section */}
+            <section id="dress-code" className="py-24 md:py-32">
+              <DressCode />
+            </section>
 
-              {/* 5. Dress Code Section */}
-              <section
-                id="dress-code"
-                className="snap-start snap-section w-full"
-              >
-                <DressCode />
-              </section>
+            {/* RSVP Section */}
+            <section id="rsvp" className="py-24 md:py-32" style={{ backgroundColor: "var(--color-ivory)" }}>
+              <FadeInSection>
+                <RSVPForm />
+              </FadeInSection>
+            </section>
 
-              {/* 6. RSVP Section */}
-              <section
-                id="rsvp"
-                className="snap-start snap-section w-full flex items-center justify-center py-12"
-                style={{ backgroundColor: "var(--color-ivory)" }}
-              >
-                <FadeInSection>
-                  <RSVPForm />
-                </FadeInSection>
-              </section>
+            {/* Gift Registry Section */}
+            <section id="gift-registry" className="py-24 md:py-32">
+              <GiftRegistry />
+            </section>
 
-              {/* 7. Gift Registry Section */}
-              <section
-                id="gift-registry"
-                className="snap-start snap-section w-full"
-              >
-                <GiftRegistry />
-              </section>
+            {/* Gallery Section */}
+            <section id="gallery" className="py-24 md:py-32">
+              <Gallery />
+            </section>
 
-              {/* 8. Gallery Section */}
-              <section
-                id="gallery"
-                className="snap-start snap-section w-full"
-              >
-                <Gallery />
-              </section>
-
-              {/* 9. Footer Section */}
-              <section
-                id="footer"
-                className="snap-start snap-section w-full"
-              >
-                <Footer />
-              </section>
-            </div>
-          </>
-        )}
-      </div>
+            {/* Footer Section */}
+            <section id="footer" className="py-24 md:py-32">
+              <Footer />
+            </section>
+          </div>
+        </>
+      )}
     </>
   );
 }
