@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Cormorant_Garamond } from "next/font/google";
+import AppLoader from "@/components/AppLoader";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -36,8 +37,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+      </head>
       <body className={`${playfair.variable} ${cormorant.variable}`}>
-        {children}
+        <AppLoader>{children}</AppLoader>
       </body>
     </html>
   );

@@ -23,7 +23,7 @@ export default function Hero() {
         {/* "We're getting married" label */}
         <motion.div
           variants={childVariants}
-          className="text-xs md:text-sm uppercase tracking-[0.3em] text-white/80 mb-4 font-sans font-semibold"
+          className="text-sm md:text-base uppercase tracking-[0.3em] text-white/80 mb-4 font-sans font-semibold"
           style={{ textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
         >
           We&apos;re getting married

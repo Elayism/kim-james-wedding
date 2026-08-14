@@ -123,7 +123,7 @@ export default function Gallery() {
             <button
               onClick={() => { setPaused(true); prev(); setTimeout(() => setPaused(false), 3000); }}
               aria-label="Previous photo"
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full flex items-center justify-center bg-[var(--color-ivory)]/70 hover:bg-[var(--color-champagne)] border border-[var(--color-champagne)] transition-all duration-200 text-[var(--color-gold-brown)] text-xl shadow"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-ivory)]/70 hover:bg-[var(--color-champagne)] border border-[var(--color-champagne)] transition-all duration-200 text-[var(--color-gold-brown)] text-2xl shadow"
             >
               ‹
             </button>
@@ -132,7 +132,7 @@ export default function Gallery() {
             <button
               onClick={() => { setPaused(true); next(); setTimeout(() => setPaused(false), 3000); }}
               aria-label="Next photo"
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full flex items-center justify-center bg-[var(--color-ivory)]/70 hover:bg-[var(--color-champagne)] border border-[var(--color-champagne)] transition-all duration-200 text-[var(--color-gold-brown)] text-xl shadow"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-ivory)]/70 hover:bg-[var(--color-champagne)] border border-[var(--color-champagne)] transition-all duration-200 text-[var(--color-gold-brown)] text-2xl shadow"
             >
               ›
             </button>
