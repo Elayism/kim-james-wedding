@@ -89,9 +89,9 @@ export default function Home() {
         playsInline
       />
 
-      {/* Envelope Section (always rendered so it can be blurred during loading) */}
+      {/* Phase 1: Envelope Video (always first, hidden after video ends) */}
       {!showSite && (
-        <section id="envelope" className="w-full min-h-screen">
+        <section id="envelope" className="fixed inset-0 z-40">
           <EnvelopeIntro 
             onOpenComplete={handleOpenComplete} 
             onPlayAudio={handlePlayAudio} 
@@ -99,59 +99,50 @@ export default function Home() {
         </section>
       )}
 
-      {/* Main Wedding Site Content */}
+      {/* Phase 2: Main Wedding Site (revealed after video) */}
       {showSite && (
-        <>
+        <div className="animate-fade-in">
           <NavBar isPlaying={isPlaying} onToggleAudio={toggleMusic} />
           <FloatingPetals />
           
-          <div
-            className="animate-fade-in transition-opacity duration-1000 opacity-0"
-            style={{ animation: "fadeIn 1s ease-in forwards" }}
-          >
-            {/* Hero Section */}
-            <section id="hero" className="w-full">
-              <Hero />
-            </section>
+          {/* Hero - always full viewport height */}
+          <section id="hero" className="relative w-full h-screen min-h-screen">
+            <Hero />
+          </section>
 
-            {/* Our Story Section */}
-            <section id="our-story" className="py-24 md:py-32">
+          {/* Content sections - readable scrollable layout */}
+          <div className="bg-[var(--color-ivory)]">
+            <section id="our-story" className="py-16 md:py-24">
               <OurStory />
             </section>
 
-            {/* Event Details Section */}
-            <section id="event-details" className="py-24 md:py-32">
+            <section id="event-details" className="py-16 md:py-24">
               <EventDetails />
             </section>
 
-            {/* Dress Code Section */}
-            <section id="dress-code" className="py-24 md:py-32">
+            <section id="dress-code" className="py-16 md:py-24">
               <DressCode />
             </section>
 
-            {/* RSVP Section */}
-            <section id="rsvp" className="py-24 md:py-32" style={{ backgroundColor: "var(--color-ivory)" }}>
+            <section id="rsvp" className="py-16 md:py-24">
               <FadeInSection>
                 <RSVPForm />
               </FadeInSection>
             </section>
 
-            {/* Gift Registry Section */}
-            <section id="gift-registry" className="py-24 md:py-32">
+            <section id="gift-registry" className="py-16 md:py-24">
               <GiftRegistry />
             </section>
 
-            {/* Gallery Section */}
-            <section id="gallery" className="py-24 md:py-32">
+            <section id="gallery" className="py-16 md:py-24">
               <Gallery />
             </section>
 
-            {/* Footer Section */}
-            <section id="footer" className="py-24 md:py-32">
+            <section id="footer" className="py-16 md:py-24">
               <Footer />
             </section>
           </div>
-        </>
+        </div>
       )}
     </>
   );

@@ -43,7 +43,7 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
 
   return (
     <div
-      className={`relative w-full min-h-screen bg-white transition-opacity duration-1000 ${
+      className={`relative w-full h-full bg-black transition-opacity duration-1000 ${
         isEnding ? "opacity-0" : "opacity-100"
       }`}
     >
@@ -54,7 +54,6 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
         defaultMuted
         playsInline
         preload="auto"
-        poster="/images/hero-bg.jpg"
         onEnded={handleVideoEnded}
         onError={handleVideoError}
         className="absolute inset-0 w-full h-full object-cover"
@@ -68,10 +67,10 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
         aria-label="Tap to open invitation"
       />
       
-      {/* Tap hint */}
+      {/* Tap hint - jumps in front of video */}
       {!hasInteracted && (
         <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center pointer-events-none">
-          <div className="animate-bounce px-4 py-2 rounded-full bg-black/30 backdrop-blur-sm text-white text-xs font-sans tracking-widest uppercase">
+          <div className="animate-bounce px-4 py-2 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs md:text-sm font-sans tracking-[0.2em] uppercase">
             Tap to open
           </div>
         </div>

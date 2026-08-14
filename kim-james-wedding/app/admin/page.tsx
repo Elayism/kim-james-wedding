@@ -44,16 +44,12 @@ export default function AdminDashboard() {
   const [notification, setNotification] = useState<{ message: string; type: "success" | "info" } | null>(null);
 
   useEffect(() => {
-    const auth = sessionStorage.getItem("admin_auth");
-    if (auth === "true") {
-      setIsAuthenticated(true);
-    }
+    setIsAuthenticated(false);
   }, []);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordInput === "wedding2027") {
-      sessionStorage.setItem("admin_auth", "true");
       setIsAuthenticated(true);
       setError("");
     } else {

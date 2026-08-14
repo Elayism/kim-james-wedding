@@ -67,7 +67,7 @@ export default function OurStory() {
 
   return (
     <div
-      className="w-full h-full flex flex-col items-center justify-center py-10"
+      className="w-full flex flex-col items-center justify-center py-10"
       style={{ backgroundColor: "var(--color-antique-white)" }}
     >
       <FadeInSection>

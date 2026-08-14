@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { rsvpSchema, type RsvpFormData } from "@/lib/rsvpSchema";
 
-const MEAL_OPTIONS = ["Chicken", "Beef", "Vegetarian", "Fish", "Pork", "Kids Meal", "Other"];
+const MEAL_OPTIONS = ["Chicken", "Beef", "Vegetarian", "Fish", "Pork", "Other"];
 
 export default function RSVPForm() {
   const [step, setStep] = useState<number>(1);

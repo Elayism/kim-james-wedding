@@ -6,15 +6,19 @@ const CRITICAL_IMAGES = ["/images/hero-bg.jpg"];
 
 export default function LoadingScreen({ onLoaded }: { onLoaded: () => void }) {
   const [showHeart, setShowHeart] = useState(false);
+  const [showTitle, setShowTitle] = useState(false);
   const [showText, setShowText] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const heartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const textTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     const startTime = Date.now();
     let isMounted = true;
+
+    const clearTimers = () => {
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
+    };
 
     const preloadAssets = async () => {
       try {
@@ -55,31 +59,44 @@ export default function LoadingScreen({ onLoaded }: { onLoaded: () => void }) {
       }
 
       const elapsed = Date.now() - startTime;
+
+      if (elapsed < 2000) {
+        if (isMounted) onLoaded();
+        return;
+      }
+
       const remaining = Math.max(0, 2000 - elapsed);
 
-      hideTimerRef.current = setTimeout(() => {
-        setIsVisible(false);
-        setTimeout(() => {
-          if (isMounted) onLoaded();
-        }, 600);
+      const t1 = setTimeout(() => {
+        if (isMounted) {
+          setShowHeart(true);
+          setShowTitle(true);
+        }
       }, remaining);
+      timersRef.current.push(t1);
+
+      const t2 = setTimeout(() => {
+        if (isMounted) setShowText(true);
+      }, remaining + 3000);
+      timersRef.current.push(t2);
+
+      const hideDelay = Math.max(remaining, 2000);
+      const t3 = setTimeout(() => {
+        if (isMounted) {
+          setIsVisible(false);
+          setTimeout(() => {
+            if (isMounted) onLoaded();
+          }, 600);
+        }
+      }, hideDelay);
+      timersRef.current.push(t3);
     };
 
     preloadAssets();
 
-    heartTimerRef.current = setTimeout(() => {
-      if (isMounted) setShowHeart(true);
-    }, 2000);
-
-    textTimerRef.current = setTimeout(() => {
-      if (isMounted) setShowText(true);
-    }, 5000);
-
     return () => {
       isMounted = false;
-      if (heartTimerRef.current) clearTimeout(heartTimerRef.current);
-      if (textTimerRef.current) clearTimeout(textTimerRef.current);
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      clearTimers();
     };
   }, [onLoaded]);
 
@@ -131,9 +148,11 @@ export default function LoadingScreen({ onLoaded }: { onLoaded: () => void }) {
           </div>
         )}
 
-        <h1 className="text-3xl md:text-4xl font-serif tracking-wide mb-3" style={{ color: "var(--color-gold-brown)" }}>
-          Kim &amp; James
-        </h1>
+        {showTitle && (
+          <h1 className="text-3xl md:text-4xl font-serif tracking-wide mb-3 animate-fade-in" style={{ color: "var(--color-gold-brown)" }}>
+            Kim &amp; James
+          </h1>
+        )}
 
         {showText && (
           <div className="animate-fade-in space-y-4">

@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoadingScreen from "./LoadingScreen";
 
 export default function AppLoader({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
-      {isLoading && <LoadingScreen onLoaded={() => setIsLoading(false)} />}
+      {isLoading && showLoader && <LoadingScreen onLoaded={() => setIsLoading(false)} />}
       <div
         className={
           isLoading
