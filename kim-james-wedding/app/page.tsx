@@ -72,7 +72,7 @@ export default function Home() {
         ref={audioRef}
         src="/audio/cant-help-falling.mp3"
         loop
-        preload="none"
+        preload="auto"
       />
 
       <div

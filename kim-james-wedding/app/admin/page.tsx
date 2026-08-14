@@ -279,7 +279,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="h-screen overflow-y-auto bg-[var(--color-ivory)] text-[var(--color-espresso)] p-4 md:p-8 font-serif">
+    <div className="fixed inset-0 overflow-y-auto bg-[var(--color-ivory)] text-[var(--color-espresso)] p-4 md:p-8 font-serif z-50">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Notification Toast */}
         {notification && (

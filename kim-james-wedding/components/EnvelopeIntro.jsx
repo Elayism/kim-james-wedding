@@ -39,6 +39,7 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
       <video
         ref={videoRef}
         src="/videos/envelope-open.mp4"
+        muted
         playsInline
         onEnded={handleVideoEnded}
         className="absolute inset-0 w-full h-full object-cover"
