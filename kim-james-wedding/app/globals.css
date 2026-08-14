@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+/* ─── Wedding Palette ─────────────────────────────────────────────────────── */
+:root {
+  --color-ivory:         #FDF8F0;
+  --color-antique-white: #FAF3E7;
+  --color-ecru:          #F0E6D2;
+  --color-warm-sand:     #E4D5B7;
+  --color-champagne:     #E8DCC4;
+  --color-soft-taupe:    #B8A88A;
+  --color-gold-brown:    #8B5E3C;
+  --color-espresso:      #3A2E28;
+}
+
+/* ─── Base ────────────────────────────────────────────────────────────────── */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-ivory);
+  color: var(--color-espresso);
+  font-family: var(--font-cormorant), "Georgia", serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair), "Georgia", serif;
+}
+
+/* ─── Letterpress Heading Emboss ─────────────────────────────────────────── */
+.font-letterpress {
+  text-shadow: 0 1px 1px rgba(253, 248, 240, 0.9), 0 -1px 1px rgba(58, 46, 40, 0.2);
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────────── */
+
+
+/* 2. Floating Petals */
+@keyframes petalFall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(105vh) rotate(360deg) translateX(50px);
+    opacity: 0;
+  }
+}
+
+.animate-petal {
+  animation: petalFall linear infinite;
+}
+
+/* 3. Slow Spinning Music Icon */
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 8s linear infinite;
+}
+
+
+/* 5. Gold Line Draw Animation */
+@keyframes drawLine {
+  from {
+    stroke-dashoffset: 300;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw-line {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: drawLine 2s cubic-bezier(0.4, 0, 0.2, 1) forwards 0.3s;
+}
+
+/* ─── Accessibility: Reduced Motion ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 6. Fade In for Page Transition */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
