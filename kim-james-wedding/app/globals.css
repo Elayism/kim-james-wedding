@@ -124,3 +124,18 @@ h1, h2, h3, h4, h5, h6 {
 .animate-fade-in {
   animation: fadeIn 0.6s ease-out forwards;
 }
+
+/* ─── Snap Scrolling ───────────────────────────────────────────────────────── */
+.snap-container {
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+
+.snap-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}

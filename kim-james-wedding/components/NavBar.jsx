@@ -15,15 +15,6 @@ const SECTIONS = [
 
 export default function NavBar({ isPlaying, onToggleAudio }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,18 +37,18 @@ export default function NavBar({ isPlaying, onToggleAudio }) {
 
   return (
     <>
-      <motion.nav
+      {/* Icon-only floating controls - no bar background */}
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.5 }}
-        className={`fixed top-0 left-0 w-full z-50 px-5 py-4 flex items-center justify-between transition-all duration-300 ${
-          scrolled ? "bg-[var(--color-ivory)]/90 backdrop-blur-md shadow-sm" : "bg-transparent"
-        }`}
+        className="fixed top-4 left-0 right-0 z-50 flex items-center justify-between px-5 pointer-events-none"
       >
+        {/* Hamburger Menu Icon */}
         <button
           onClick={() => setIsOpen(true)}
-          className="p-2 -ml-2 rounded-full transition-colors"
-          style={{ color: scrolled ? "var(--color-espresso)" : "var(--color-ivory)" }}
+          className="pointer-events-auto p-2 -ml-2 rounded-full transition-colors"
+          style={{ color: "var(--color-ivory)" }}
           aria-label="Open menu"
         >
           <svg
@@ -66,19 +57,22 @@ export default function NavBar({ isPlaying, onToggleAudio }) {
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="w-7 h-7"
+            className="w-7 h-7 drop-shadow-lg"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
 
+        {/* Audio Toggle Icon */}
         <button
           onClick={onToggleAudio}
-          className={`flex items-center justify-center w-11 h-11 rounded-full border transition-all duration-300 shadow-md backdrop-blur-sm ${
-            isPlaying ? "bg-[var(--color-antique-white)]/90" : "bg-white/80"
-          }`}
+          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full border transition-all duration-300 shadow-lg backdrop-blur-sm"
           aria-label="Toggle Audio"
-          style={{ color: "var(--color-gold-brown)", borderColor: "var(--color-champagne)" }}
+          style={{ 
+            color: "var(--color-gold-brown)", 
+            borderColor: "var(--color-champagne)",
+            backgroundColor: "rgba(253, 248, 240, 0.85)"
+          }}
         >
           <div className={isPlaying ? "animate-spin-slow" : ""}>
             {isPlaying ? (
@@ -93,8 +87,9 @@ export default function NavBar({ isPlaying, onToggleAudio }) {
             )}
           </div>
         </button>
-      </motion.nav>
+      </motion.div>
 
+      {/* Slide-out Menu */}
       <AnimatePresence>
         {isOpen && (
           <>

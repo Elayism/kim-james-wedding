@@ -89,7 +89,7 @@ export default function Home() {
         playsInline
       />
 
-      {/* Phase 1: Envelope Video (always first, hidden after video ends) */}
+      {/* Phase 1: Envelope Video (full screen overlay, hidden after video ends) */}
       {!showSite && (
         <section id="envelope" className="fixed inset-0 z-40">
           <EnvelopeIntro 
@@ -105,40 +105,40 @@ export default function Home() {
           <NavBar isPlaying={isPlaying} onToggleAudio={toggleMusic} />
           <FloatingPetals />
           
-          {/* Hero - always full viewport height */}
-          <section id="hero" className="relative w-full h-screen min-h-screen">
+          {/* Hero Section - full viewport height */}
+          <section id="hero" className="relative w-full h-screen">
             <Hero />
           </section>
 
-          {/* Content sections - readable scrollable layout */}
-          <div className="bg-[var(--color-ivory)]">
-            <section id="our-story" className="py-16 md:py-24">
+          {/* Content sections - snap scrolling container */}
+          <div className="snap-container">
+            <section id="our-story" className="snap-section min-h-screen py-16 md:py-24">
               <OurStory />
             </section>
 
-            <section id="event-details" className="py-16 md:py-24">
+            <section id="event-details" className="snap-section min-h-screen py-16 md:py-24">
               <EventDetails />
             </section>
 
-            <section id="dress-code" className="py-16 md:py-24">
+            <section id="dress-code" className="snap-section min-h-screen py-16 md:py-24">
               <DressCode />
             </section>
 
-            <section id="rsvp" className="py-16 md:py-24">
+            <section id="rsvp" className="snap-section min-h-screen py-16 md:py-24" style={{ backgroundColor: "var(--color-ivory)" }}>
               <FadeInSection>
                 <RSVPForm />
               </FadeInSection>
             </section>
 
-            <section id="gift-registry" className="py-16 md:py-24">
+            <section id="gift-registry" className="snap-section min-h-screen py-16 md:py-24">
               <GiftRegistry />
             </section>
 
-            <section id="gallery" className="py-16 md:py-24">
+            <section id="gallery" className="snap-section min-h-screen py-16 md:py-24">
               <Gallery />
             </section>
 
-            <section id="footer" className="py-16 md:py-24">
+            <section id="footer" className="snap-section min-h-screen py-16 md:py-24">
               <Footer />
             </section>
           </div>

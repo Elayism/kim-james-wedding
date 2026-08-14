@@ -1,11 +1,21 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
   const [isEnding, setIsEnding] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = true;
+      videoRef.current.volume = 0;
+      videoRef.current.play().catch((err) => {
+        console.error("Autoplay failed", err);
+      });
+    }
+  }, []);
 
   const handleTap = () => {
     if (hasInteracted) return;
@@ -67,10 +77,10 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
         aria-label="Tap to open invitation"
       />
       
-      {/* Tap hint - jumps in front of video */}
+      {/* Tap hint - bigger, centered on video */}
       {!hasInteracted && (
-        <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center pointer-events-none">
-          <div className="animate-bounce px-4 py-2 rounded-full bg-black/40 backdrop-blur-sm text-white text-xs md:text-sm font-sans tracking-[0.2em] uppercase">
+        <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center pointer-events-none">
+          <div className="animate-bounce px-6 py-3 rounded-full bg-black/50 backdrop-blur-md text-white text-base md:text-lg font-sans tracking-[0.25em] uppercase border border-white/20 shadow-2xl">
             Tap to open
           </div>
         </div>
