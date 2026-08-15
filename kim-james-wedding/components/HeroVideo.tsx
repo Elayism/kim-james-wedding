@@ -4,84 +4,26 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 interface HeroVideoProps {
   onVideoReady: () => void;
-  onVideoError: (error: Error) => void;
-  onShowFallback: () => void;
-  onHideFallback: () => void;
   onVideoEnd: () => void;
 }
 
-const MAX_RETRIES = 3;
-
-export default function HeroVideo({
-  onVideoReady,
-  onVideoError,
-  onShowFallback,
-  onHideFallback,
-  onVideoEnd,
-}: HeroVideoProps) {
+export default function HeroVideo({ onVideoReady, onVideoEnd }: HeroVideoProps) {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const retryTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
 
-  const clearTimers = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    if (retryTimerRef.current) {
-      clearTimeout(retryTimerRef.current);
-      retryTimerRef.current = null;
-    }
-  }, []);
-
-  const startFallbackTimer = useCallback(() => {
-    clearTimers();
-    timerRef.current = setTimeout(() => {
-      if (isMountedRef.current) {
-        onShowFallback();
-      }
-    }, 500);
-  }, [clearTimers, onShowFallback]);
-
   const handleCanPlay = useCallback(() => {
-    clearTimers();
     if (isMountedRef.current) {
-      onHideFallback();
       onVideoReady();
     }
-  }, [clearTimers, onHideFallback, onVideoReady]);
+  }, [onVideoReady]);
 
   const handleLoadedData = useCallback(() => {
-    clearTimers();
     if (isMountedRef.current) {
-      onHideFallback();
       onVideoReady();
     }
-  }, [clearTimers, onHideFallback, onVideoReady]);
-
-  const handleError = useCallback(() => {
-    clearTimers();
-    const error = new Error("Video failed to load");
-    if (isMountedRef.current) {
-      onVideoError(error);
-    }
-
-    if (retryCount < MAX_RETRIES) {
-      const delay = Math.min(1000 * Math.pow(2, retryCount), 8000);
-      setRetryCount((prev) => prev + 1);
-
-      retryTimerRef.current = setTimeout(() => {
-        if (videoRef.current && isMountedRef.current) {
-          videoRef.current.load();
-          startFallbackTimer();
-        }
-      }, delay);
-    }
-  }, [clearTimers, onVideoError, retryCount, startFallbackTimer]);
+  }, [onVideoReady]);
 
   const handleTap = useCallback(() => {
     if (!videoRef.current) return;
@@ -95,10 +37,8 @@ export default function HeroVideo({
       }).catch((err) => {
         console.error("Video play failed:", err);
       });
-    } else if (isPlaying) {
-      onVideoEnd();
     }
-  }, [hasInteracted, isPlaying, onVideoEnd]);
+  }, [hasInteracted]);
 
   const handleVideoEnded = useCallback(() => {
     setIsPlaying(false);
@@ -110,13 +50,15 @@ export default function HeroVideo({
     const video = videoRef.current;
     if (!video) return;
 
-    startFallbackTimer();
+    // Lock body scroll while video is the initial full-screen view
+    document.body.style.overflow = "hidden";
 
     return () => {
       isMountedRef.current = false;
-      clearTimers();
+      // Restore scroll when component unmounts
+      document.body.style.overflow = "";
     };
-  }, [startFallbackTimer, clearTimers]);
+  }, []);
 
   return (
     <div className="relative w-full h-full">
@@ -130,7 +72,6 @@ export default function HeroVideo({
         controlsList="nodownload"
         onCanPlay={handleCanPlay}
         onLoadedData={handleLoadedData}
-        onError={handleError}
         onEnded={handleVideoEnded}
         onClick={handleTap}
         onTouchEnd={handleTap}

@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import HeroVideo from "@/components/HeroVideo";
-import HeartLoader from "@/components/HeartLoader";
 import NavBar from "@/components/NavBar";
 import Hero from "@/components/Hero";
 import OurStory from "@/components/OurStory";
@@ -19,32 +18,18 @@ const COLOR_B = "var(--color-section-b)";
 
 export default function Home() {
   const [videoReady, setVideoReady] = useState(false);
-  const [showFallback, setShowFallback] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
   const [videoFinished, setVideoFinished] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handleVideoReady = () => {
     setVideoReady(true);
-    setShowFallback(false);
-  };
-
-  const handleVideoError = (error: Error) => {
-    console.error("Hero video error:", error);
-    setRetryCount((prev) => prev + 1);
-    setShowFallback(true);
-  };
-
-  const handleShowFallback = () => {
-    setShowFallback(true);
-  };
-
-  const handleHideFallback = () => {
-    setShowFallback(false);
   };
 
   const handleVideoEnd = () => {
+    // Smooth transition: fade out video section and fade in hero
     setVideoFinished(true);
+    // Re-enable page scrolling after video finishes
+    document.body.style.overflow = "";
   };
 
   const toggleMusic = () => {
@@ -96,29 +81,23 @@ export default function Home() {
 
       {/* Main Scroll Container */}
       <div className="snap-container">
-        {/* Video Section */}
+        {/* Video Section - full viewport, scroll locked until video ends */}
         <section
           id="hero"
-          className="snap-section relative h-screen md:h-screen"
+          className={`snap-section relative h-screen md:h-screen transition-all duration-1000 ${
+            videoFinished ? "opacity-0 pointer-events-none" : "opacity-100"
+          }`}
           style={{ backgroundColor: COLOR_A }}
         >
           <div className="absolute inset-0">
             <HeroVideo
               onVideoReady={handleVideoReady}
-              onVideoError={handleVideoError}
-              onShowFallback={handleShowFallback}
-              onHideFallback={handleHideFallback}
               onVideoEnd={handleVideoEnd}
             />
           </div>
-
-          {/* Heart Loader Fallback - positioned within hero, covers hero only */}
-          {showFallback && (
-            <HeartLoader isVisible={showFallback} retryCount={retryCount} backgroundColor={COLOR_A} />
-          )}
         </section>
 
-        {/* Hero Section - transitions in after video ends */}
+        {/* Hero Section - fades in after video ends with subtle zoom-out */}
         <section
           className={`snap-section relative h-screen md:h-screen transition-all duration-1000 ${
             videoFinished ? "opacity-100 scale-100" : "opacity-0 scale-105"

@@ -575,7 +575,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       ) : (
-        <div className="min-h-screen w-full">
+        <div className="min-h-screen w-full overflow-y-auto" style={{ maxHeight: "calc(100dvh)" }}>
           {notification && (
             <div
               className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-xl text-xs font-sans font-semibold border flex items-center gap-2 ${

@@ -53,20 +53,21 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false });
 
     const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
-      setTimeout(() => resolve({ data: null, error: { message: "Supabase connection timeout (placeholder credentials configured)." } }), 3000)
+      setTimeout(() => resolve({ data: null, error: { message: "Connection timeout. Check database credentials." } }), 3000)
     );
 
-    const { data, error } = (await Promise.race([fetchPromise, timeoutPromise])) as any;
+    const result = (await Promise.race([fetchPromise, timeoutPromise])) as any;
+    const { data, error } = result || {};
 
     if (error) {
       console.error("Supabase admin fetch error:", error);
-      fetchError = error.message;
-    } else if (data) {
+      fetchError = error.message || "Failed to fetch RSVPs";
+    } else if (data && Array.isArray(data)) {
       rsvps = data as RsvpRecord[];
     }
   } catch (err: any) {
     console.error("Dashboard fetch exception:", err);
-    fetchError = "Could not connect to database.";
+    fetchError = err?.message || "Could not connect to database.";
   }
 
   // Calculate total guests attending (sum of guest_count where attending = 'accepts')
@@ -76,12 +77,12 @@ export default async function DashboardPage() {
 
   return (
     <div
-      className="min-h-screen w-full p-4 md:p-8"
+      className="min-h-screen w-full overflow-y-auto"
       style={{ backgroundColor: "var(--color-ivory)" }}
     >
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
         {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--color-champagne)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--color-champagne)] sticky top-0 bg-[var(--color-ivory)] z-30">
           <div>
             <div className="text-xs uppercase tracking-widest text-[var(--color-soft-taupe)] font-semibold mb-1">
               Organizer Panel
@@ -104,7 +105,8 @@ export default async function DashboardPage() {
         {/* Database Connection Notice / Error */}
         {fetchError && (
           <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 font-sans">
-            <strong>Database Status Notice:</strong> {fetchError} (Showing local view)
+            <strong>Database Status Notice:</strong> {fetchError}{" "}
+            {rsvps.length === 0 ? "No records available." : `Showing ${rsvps.length} cached record(s).`}
           </div>
         )}
 
@@ -127,7 +129,9 @@ export default async function DashboardPage() {
               {rsvps.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-8 text-center text-sm text-[var(--color-soft-taupe)] italic">
-                    No RSVP submissions found yet.
+                    {fetchError
+                      ? "Unable to load records. Please check your connection."
+                      : "No RSVP submissions found yet."}
                   </td>
                 </tr>
               ) : (
