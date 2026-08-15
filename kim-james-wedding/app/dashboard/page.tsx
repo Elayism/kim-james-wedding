@@ -15,129 +15,6 @@ export interface RsvpRecord {
   created_at: string;
 }
 
-const SAMPLE_DATA: RsvpRecord[] = [
-  {
-    id: "1",
-    full_name: "Maria Santos",
-    email: "maria@example.com",
-    attending: "accepts",
-    guest_count: 3,
-    meal_preference: "Chicken",
-    meal_other: null,
-    dietary_restrictions: "Nut Allergy",
-    message: "So happy for both of you! See you there!",
-    created_at: "2026-08-10T10:00:00Z",
-  },
-  {
-    id: "2",
-    full_name: "Carlos Reyes",
-    email: "carlos@example.com",
-    attending: "accepts",
-    guest_count: 2,
-    meal_preference: "Beef",
-    meal_other: null,
-    dietary_restrictions: "None",
-    message: "Congratulations Kim & James!",
-    created_at: "2026-08-11T14:30:00Z",
-  },
-  {
-    id: "3",
-    full_name: "Ana Cruz",
-    email: "ana@example.com",
-    attending: "declines",
-    guest_count: 1,
-    meal_preference: "Vegetarian",
-    meal_other: null,
-    dietary_restrictions: null,
-    message: "Wishing you both a lifetime of love and happiness!",
-    created_at: "2026-08-12T09:15:00Z",
-  },
-  {
-    id: "4",
-    full_name: "David Kim",
-    email: "david@example.com",
-    attending: "accepts",
-    guest_count: 2,
-    meal_preference: "Pork",
-    meal_other: null,
-    dietary_restrictions: "Gluten-free",
-    message: "Excited to celebrate with you!",
-    created_at: "2026-08-13T16:45:00Z",
-  },
-  {
-    id: "5",
-    full_name: "Sophie Turner",
-    email: "sophie@example.com",
-    attending: "accepts",
-    guest_count: 1,
-    meal_preference: "Other",
-    meal_other: "Vegan",
-    dietary_restrictions: "Vegan",
-    message: "So happy for you both!",
-    created_at: "2026-08-14T11:20:00Z",
-  },
-  {
-    id: "6",
-    full_name: "Michael Brown",
-    email: "michael@example.com",
-    attending: "declines",
-    guest_count: 1,
-    meal_preference: "Chicken",
-    meal_other: null,
-    dietary_restrictions: null,
-    message: "Sorry we can't make it.",
-    created_at: "2026-08-15T08:00:00Z",
-  },
-  {
-    id: "7",
-    full_name: "Jessica Lee",
-    email: "jessica@example.com",
-    attending: "accepts",
-    guest_count: 4,
-    meal_preference: "Chicken",
-    meal_other: null,
-    dietary_restrictions: "Shellfish allergy",
-    message: "Can't wait to celebrate!",
-    created_at: "2026-08-16T13:10:00Z",
-  },
-  {
-    id: "8",
-    full_name: "Ryan Garcia",
-    email: "ryan@example.com",
-    attending: "accepts",
-    guest_count: 2,
-    meal_preference: "Vegetarian",
-    meal_other: null,
-    dietary_restrictions: null,
-    message: "Congratulations!",
-    created_at: "2026-08-17T10:45:00Z",
-  },
-  {
-    id: "9",
-    full_name: "Emily Watson",
-    email: "emily@example.com",
-    attending: "declines",
-    guest_count: 1,
-    meal_preference: "Fish",
-    meal_other: null,
-    dietary_restrictions: null,
-    message: "Sad to miss it!",
-    created_at: "2026-08-18T15:30:00Z",
-  },
-  {
-    id: "10",
-    full_name: "Daniel Martinez",
-    email: "daniel@example.com",
-    attending: "accepts",
-    guest_count: 3,
-    meal_preference: "Beef",
-    meal_other: null,
-    dietary_restrictions: "Dairy allergy",
-    message: "Looking forward to it!",
-    created_at: "2026-08-19T09:00:00Z",
-  },
-];
-
 function formatDate(dateStr: string) {
   if (!dateStr) return "N/A";
   try {
@@ -155,19 +32,33 @@ function formatDate(dateStr: string) {
   }
 }
 
+async function getRSVPs(): Promise<RsvpRecord[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/api/rsvp?type=active`, {
+      next: { revalidate: 0 },
+      cache: "no-store",
+    });
+    const json = await res.json();
+    if (res.ok && json && json.data && Array.isArray(json.data)) {
+      return json.data as RsvpRecord[];
+    }
+  } catch (err) {
+    console.error("Failed to fetch RSVPs from API:", err);
+  }
+  return [];
+}
+
 export default async function DashboardPage() {
   const cookieStore = await cookies();
   const authCookie = cookieStore.get("dashboard_auth");
 
-  // Check authentication
   if (!authCookie || authCookie.value !== "true") {
     return <Login />;
   }
 
-  // Use static sample data - no database connection
-  const rsvps = SAMPLE_DATA;
+  const rsvps = await getRSVPs();
 
-  // Calculate total guests attending (sum of guest_count where attending = 'accepts')
   const totalAttendingGuests = rsvps
     .filter((r) => r.attending === "accepts")
     .reduce((sum, r) => sum + (Number(r.guest_count) || 1), 0);

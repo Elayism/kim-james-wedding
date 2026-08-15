@@ -118,13 +118,21 @@ export async function POST(request: Request) {
             message: "RSVP saved to Supabase successfully!",
           });
         }
-        console.warn("Supabase insert failed, attempting legacy schema fallback:", error.message);
+        console.error("Supabase insert failed:", error.message);
+        return NextResponse.json({
+          success: false,
+          message: `Failed to save RSVP to database: ${error.message}`,
+        }, { status: 500 });
       } catch (err) {
-        console.warn("Supabase connection error:", err);
+        console.error("Supabase connection error:", err);
+        return NextResponse.json({
+          success: false,
+          message: "Database connection error. Please try again later.",
+        }, { status: 500 });
       }
     }
 
-    // Local Fallback if Supabase credentials are not set yet
+    // Local Fallback only when Supabase is NOT configured
     addInMemoryRSVP(rsvpPayload);
 
     return NextResponse.json({
@@ -204,9 +212,17 @@ export async function PUT(request: Request) {
         if (!error) {
           return NextResponse.json({ success: true, message: "RSVP updated successfully" });
         }
-        console.warn("Supabase update failed:", error.message);
+        console.error("Supabase update failed:", error.message);
+        return NextResponse.json({
+          success: false,
+          message: `Failed to update RSVP: ${error.message}`,
+        }, { status: 500 });
       } catch (err) {
-        console.warn("Supabase update error:", err);
+        console.error("Supabase update error:", err);
+        return NextResponse.json({
+          success: false,
+          message: "Database connection error during update.",
+        }, { status: 500 });
       }
     }
 
@@ -246,8 +262,17 @@ export async function DELETE(request: Request) {
         if (!error) {
           return NextResponse.json({ success: true, message: permanent ? "Record permanently deleted" : "Record deleted successfully" });
         }
+        console.error("Supabase delete failed:", error.message);
+        return NextResponse.json({
+          success: false,
+          message: `Failed to delete RSVP: ${error.message}`,
+        }, { status: 500 });
       } catch (e) {
-        console.warn("Supabase delete error:", e);
+        console.error("Supabase delete error:", e);
+        return NextResponse.json({
+          success: false,
+          message: "Database connection error during delete.",
+        }, { status: 500 });
       }
     }
 
