@@ -39,14 +39,6 @@ export default function Home() {
     setShowFallback(false);
   };
 
-  const handleVideoPlay = () => {
-    setIsPlaying(true);
-  };
-
-  const handleVideoPause = () => {
-    setIsPlaying(false);
-  };
-
   const toggleMusic = () => {
     if (!audioRef.current) return;
     if (isPlaying) {
@@ -125,7 +117,7 @@ export default function Home() {
         {/* Our Story Section */}
         <section
           id="our-story"
-          className="snap-section min-h-screen py-6 md:py-0"
+          className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
           style={{ backgroundColor: "var(--color-antique-white)" }}
         >
           <OurStory />
@@ -134,7 +126,7 @@ export default function Home() {
         {/* Event Details Section */}
         <section
           id="event-details"
-          className="snap-section min-h-screen py-6 md:py-0"
+          className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
           style={{ backgroundColor: "var(--color-ivory)" }}
         >
           <EventDetails />
@@ -143,7 +135,7 @@ export default function Home() {
         {/* Dress Code Section */}
         <section
           id="dress-code"
-          className="snap-section min-h-screen py-6 md:py-0"
+          className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
           style={{ backgroundColor: "var(--color-ecru)" }}
         >
           <DressCode />
@@ -152,7 +144,7 @@ export default function Home() {
         {/* RSVP Section */}
         <section
           id="rsvp"
-          className="snap-section min-h-screen py-6 md:py-0"
+          className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
           style={{ backgroundColor: "var(--color-antique-white)" }}
         >
           <RSVPForm />
@@ -161,7 +153,7 @@ export default function Home() {
         {/* Gift Registry Section */}
         <section
           id="gift-registry"
-          className="snap-section min-h-screen py-6 md:py-0"
+          className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
           style={{ backgroundColor: "var(--color-ivory)" }}
         >
           <GiftRegistry />
@@ -170,7 +162,7 @@ export default function Home() {
         {/* Gallery Section */}
         <section
           id="gallery"
-          className="snap-section min-h-screen py-6 md:py-0"
+          className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
           style={{ backgroundColor: "var(--color-ecru)" }}
         >
           <Gallery />
@@ -179,7 +171,7 @@ export default function Home() {
         {/* Footer Section */}
         <section
           id="footer"
-          className="snap-section min-h-screen py-6 md:py-0"
+          className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
           style={{ backgroundColor: "var(--color-antique-white)" }}
         >
           <Footer />

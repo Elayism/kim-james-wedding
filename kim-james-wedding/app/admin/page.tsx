@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import Link from "next/link";
 
 interface GuestItem {
@@ -31,6 +32,8 @@ const PIE_COLORS: Record<string, string> = {
   "Kids Meal": "#E4D5B7",
   Other: "#A9A9A9",
 };
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function IconLock() {
   return (
@@ -108,12 +111,10 @@ export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [error, setError] = useState("");
-  const [activeRecords, setActiveRecords] = useState<RsvpRecord[]>([]);
-  const [deletedRecords, setDeletedRecords] = useState<RsvpRecord[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "info" } | null>(null);
+  const { mutate } = useSWRConfig();
 
   const [modal, setModal] = useState<{
     open: boolean;
@@ -126,6 +127,30 @@ export default function AdminDashboard() {
   useEffect(() => {
     setIsAuthenticated(false);
   }, []);
+
+  const { data: activeData, isLoading: activeLoading } = useSWR<RsvpRecord[]>(
+    isAuthenticated ? "/api/rsvp?type=active" : null,
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      refreshInterval: 0,
+    }
+  );
+
+  const { data: deletedData, isLoading: deletedLoading } = useSWR<RsvpRecord[]>(
+    isAuthenticated ? "/api/rsvp?type=deleted" : null,
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      refreshInterval: 0,
+    }
+  );
+
+  const activeRecords = activeData || [];
+  const deletedRecords = deletedData || [];
+  const loading = activeLoading || deletedLoading;
 
   const showToast = (message: string, type: "success" | "info" = "success") => {
     setNotification({ message, type });
@@ -140,39 +165,10 @@ export default function AdminDashboard() {
     setModal((prev) => ({ ...prev, open: false }));
   };
 
-  const fetchRecords = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [resActive, resDeleted] = await Promise.all([
-        fetch("/api/rsvp?type=active"),
-        fetch("/api/rsvp?type=deleted"),
-      ]);
-
-      const [jsonActive, jsonDeleted] = await Promise.all([
-        resActive.json(),
-        resDeleted.json(),
-      ]);
-
-      if (resActive.ok && jsonActive.success) {
-        setActiveRecords(jsonActive.data || []);
-      }
-      if (resDeleted.ok && jsonDeleted.success) {
-        setDeletedRecords(jsonDeleted.data || []);
-      }
-    } catch (err) {
-      console.error("Failed to fetch RSVPs:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchRecords();
-      const interval = setInterval(fetchRecords, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated, fetchRecords]);
+  const revalidate = () => {
+    mutate("/api/rsvp?type=active");
+    mutate("/api/rsvp?type=deleted");
+  };
 
   const handleDelete = async (id: string | number, name: string) => {
     openModal(
@@ -183,8 +179,11 @@ export default function AdminDashboard() {
         const record = activeRecords.find((r) => r.id === id);
         if (!record) return;
 
-        setActiveRecords((prev) => prev.filter((r) => r.id !== id));
-        setDeletedRecords((prev) => [record, ...prev]);
+        const updatedActive = activeRecords.filter((r) => r.id !== id);
+        const updatedDeleted = [record, ...deletedRecords];
+
+        mutate("/api/rsvp?type=active", updatedActive, false);
+        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
         showToast(`Moved "${name}" to Deleted History`, "info");
 
         try {
@@ -192,12 +191,12 @@ export default function AdminDashboard() {
           const json = await res.json();
           if (!res.ok || !json.success) {
             showToast(json.message || "Failed to delete record", "info");
-            fetchRecords();
+            revalidate();
           }
         } catch (err) {
           console.error("Delete error:", err);
           showToast("Network error while deleting", "info");
-          fetchRecords();
+          revalidate();
         }
       },
       "danger"
@@ -213,8 +212,11 @@ export default function AdminDashboard() {
         const record = deletedRecords.find((r) => r.id === id);
         if (!record) return;
 
-        setDeletedRecords((prev) => prev.filter((r) => r.id !== id));
-        setActiveRecords((prev) => [record, ...prev]);
+        const updatedDeleted = deletedRecords.filter((r) => r.id !== id);
+        const updatedActive = [record, ...activeRecords];
+
+        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
+        mutate("/api/rsvp?type=active", updatedActive, false);
         showToast(`Restored "${name}" back to Active RSVPs`, "success");
 
         try {
@@ -226,12 +228,12 @@ export default function AdminDashboard() {
           const json = await res.json();
           if (!res.ok || !json.success) {
             showToast(json.message || "Failed to restore record", "info");
-            fetchRecords();
+            revalidate();
           }
         } catch (err) {
           console.error("Restore error:", err);
           showToast("Network error while restoring", "info");
-          fetchRecords();
+          revalidate();
         }
       },
       "info"
@@ -245,23 +247,23 @@ export default function AdminDashboard() {
       async () => {
         closeModal();
         const record = deletedRecords.find((r) => r.id === id);
-        if (record) {
-          setDeletedRecords((prev) => prev.filter((r) => r.id !== id));
-        }
+        if (!record) return;
+
+        const updatedDeleted = deletedRecords.filter((r) => r.id !== id);
+        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
+        showToast(`Permanently deleted "${name}"`, "info");
 
         try {
           const res = await fetch(`/api/rsvp?id=${id}&permanent=true`, { method: "DELETE" });
           const json = await res.json();
-          if (res.ok && json.success) {
-            showToast(`Permanently deleted "${name}"`, "info");
-          } else {
+          if (!res.ok || !json.success) {
             showToast(json.message || "Failed to permanently delete record", "info");
-            fetchRecords();
+            revalidate();
           }
         } catch (err) {
           console.error("Permanent Delete error:", err);
           showToast("Network error while deleting", "info");
-          fetchRecords();
+          revalidate();
         }
       },
       "danger"
@@ -540,7 +542,7 @@ export default function AdminDashboard() {
 
               <div className="flex items-center gap-2 font-sans">
                 <button
-                  onClick={fetchRecords}
+                  onClick={revalidate}
                   className="inline-flex items-center gap-1.5 px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] transition whitespace-nowrap"
                 >
                   <IconRefresh />

@@ -14,7 +14,6 @@ const MAX_RETRIES = 3;
 export default function HeroVideo({ onVideoReady, onVideoError, onShowFallback, onHideFallback }: HeroVideoProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const retryTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -86,7 +85,6 @@ export default function HeroVideo({ onVideoReady, onVideoError, onShowFallback, 
       videoRef.current.muted = false;
       videoRef.current.volume = 1.0;
       videoRef.current.play().then(() => {
-        setHasInteracted(true);
         setIsPlaying(true);
       }).catch((err) => {
         console.error("Video play failed:", err);
