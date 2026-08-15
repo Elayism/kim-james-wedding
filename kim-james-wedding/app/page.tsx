@@ -157,7 +157,6 @@ export default function Home() {
             zIndex: 40,
             opacity: videoVisible ? 1 : 0,
             pointerEvents: videoVisible ? "auto" : "none",
-            transition: "opacity 500ms ease-out",
           }}
         >
             <HeroVideo

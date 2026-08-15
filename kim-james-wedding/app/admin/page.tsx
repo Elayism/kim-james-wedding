@@ -3,18 +3,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import Link from "next/link";
-import { SAMPLE_DATA } from "@/lib/sampleData";
-
-async function seedSampleData() {
-  try {
-    const res = await fetch("/api/rsvp/seed", { method: "POST" });
-    const json = await res.json();
-    return json.success;
-  } catch (err) {
-    console.error("Seed error:", err);
-    return false;
-  }
-}
 
 interface GuestItem {
   name: string;
@@ -129,7 +117,6 @@ export default function AdminDashboard() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState<string>("");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "info" } | null>(null);
-  const [seeded, setSeeded] = useState(false);
   const { mutate } = useSWRConfig();
 
   const [modal, setModal] = useState<{
@@ -165,32 +152,6 @@ export default function AdminDashboard() {
       setPasswordInput("");
     }
   };
-
-  // Seed sample data into Supabase once after authentication
-  useEffect(() => {
-    if (!isAuthenticated || seeded) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/rsvp?type=active");
-        const json = await res.json();
-        const existing = (json && (json.data || json)) as RsvpRecord[] | undefined;
-        if (!cancelled && (!existing || existing.length === 0)) {
-          await seedSampleData();
-        }
-        if (!cancelled) {
-          setSeeded(true);
-          mutate("/api/rsvp?type=active");
-          mutate("/api/rsvp?type=deleted");
-        }
-      } catch (err) {
-        console.error("Seed check error:", err);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated, seeded, mutate]);
 
   // Fetch data from Supabase via API routes
   const { data: activeData, isLoading: activeLoading, error: activeError } = useSWR<RsvpRecord[]>(
