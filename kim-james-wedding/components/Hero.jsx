@@ -5,7 +5,7 @@ import FadeInSection, { childVariants } from "./FadeInSection";
 
 export default function Hero() {
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden bg-black">
+    <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden bg-black">
       {/* Background Image — slow 2s zoom-out from 1.08x to 1x */}
       <motion.div
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"

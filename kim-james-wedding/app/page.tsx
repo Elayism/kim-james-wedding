@@ -108,7 +108,7 @@ export default function Home() {
           {/* All sections in snap scroll container */}
           <div className="snap-container h-dvh">
             {/* Hero Section */}
-            <section id="hero" className="snap-section min-h-screen py-6 md:py-0">
+            <section id="hero" className="snap-section min-h-screen md:h-screen">
               <Hero />
             </section>
 
