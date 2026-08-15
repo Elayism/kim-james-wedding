@@ -58,7 +58,7 @@ export default function Gallery() {
 
   return (
     <div
-      className="w-full flex flex-col items-center justify-center py-10"
+      className="w-full flex flex-col items-center justify-center"
       style={{ backgroundColor: "var(--color-antique-white)" }}
     >
       <FadeInSection>

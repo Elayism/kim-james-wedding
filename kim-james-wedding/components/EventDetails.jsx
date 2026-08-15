@@ -27,7 +27,7 @@ export default function EventDetails() {
 
   return (
     <div
-      className="w-full flex flex-col items-center justify-center py-12"
+      className="w-full flex flex-col items-center justify-center"
       style={{ backgroundColor: "var(--color-ivory)" }}
     >
       <FadeInSection>

@@ -51,7 +51,7 @@ INTERNATIONAL EMAILS
 
   return (
     <div
-      className="w-full flex flex-col items-center justify-center py-12 px-4 overflow-y-auto"
+      className="w-full flex flex-col items-center justify-center px-4"
       style={{ backgroundColor: "var(--color-ivory)" }}
     >
       <FadeInSection>
