@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import Link from "next/link";
 
 interface GuestItem {
@@ -188,6 +189,13 @@ const PIE_COLORS: Record<string, string> = {
   Other: "#A9A9A9",
 };
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json()).then((json) => {
+  if (json && typeof json === 'object' && 'data' in json) {
+    return (json as any).data as RsvpRecord[];
+  }
+  return json as RsvpRecord[];
+});
+
 function IconLock() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
@@ -267,9 +275,7 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "info" } | null>(null);
-
-  // Static sample data - no database connection
-  const [records, setRecords] = useState<RsvpRecord[]>(SAMPLE_DATA);
+  const { mutate } = useSWRConfig();
 
   const [modal, setModal] = useState<{
     open: boolean;
@@ -305,8 +311,30 @@ export default function AdminDashboard() {
     }
   };
 
-  const activeRecords = records.filter((r) => !r.is_deleted);
-  const deletedRecords = records.filter((r) => r.is_deleted);
+  // Fetch data from Supabase via API routes
+  const { data: activeData, isLoading: activeLoading, error: activeError } = useSWR<RsvpRecord[]>(
+    isAuthenticated ? "/api/rsvp?type=active" : null,
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      refreshInterval: 0,
+    }
+  );
+
+  const { data: deletedData, isLoading: deletedLoading, error: deletedError } = useSWR<RsvpRecord[]>(
+    isAuthenticated ? "/api/rsvp?type=deleted" : null,
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      refreshInterval: 0,
+    }
+  );
+
+  const activeRecords = activeData || [];
+  const deletedRecords = deletedData || [];
+  const loading = activeLoading || deletedLoading;
 
   const showToast = (message: string, type: "success" | "info" = "success") => {
     setNotification({ message, type });
@@ -321,44 +349,105 @@ export default function AdminDashboard() {
     setModal((prev) => ({ ...prev, open: false }));
   };
 
-  const handleDelete = (id: string | number, name: string) => {
+  const handleDelete = async (id: string | number, name: string) => {
     openModal(
       "Move to Deleted History?",
       `Are you sure you want to move RSVP for "${name}" to Deleted History?`,
-      () => {
+      async () => {
         closeModal();
-        setRecords((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, is_deleted: true } : r))
-        );
+        const record = activeRecords.find((r) => r.id === id);
+        if (!record) return;
+
+        const updatedActive = activeRecords.filter((r) => r.id !== id);
+        const updatedDeleted = [record, ...deletedRecords];
+
+        mutate("/api/rsvp?type=active", updatedActive, false);
+        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
         showToast(`Moved "${name}" to Deleted History`, "info");
+
+        try {
+          const res = await fetch(`/api/rsvp?id=${id}`, { method: "DELETE" });
+          const json = await res.json();
+          if (!res.ok || !json.success) {
+            showToast(json.message || "Failed to delete record", "info");
+            mutate("/api/rsvp?type=active");
+            mutate("/api/rsvp?type=deleted");
+          }
+        } catch (err) {
+          console.error("Delete error:", err);
+          showToast("Network error while deleting", "info");
+          mutate("/api/rsvp?type=active");
+          mutate("/api/rsvp?type=deleted");
+        }
       },
       "danger"
     );
   };
 
-  const handleRestore = (id: string | number, name: string) => {
+  const handleRestore = async (id: string | number, name: string) => {
     openModal(
       "Restore RSVP?",
       `Are you sure you want to restore "${name}" back to Active RSVPs?`,
-      () => {
+      async () => {
         closeModal();
-        setRecords((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, is_deleted: false } : r))
-        );
+        const record = deletedRecords.find((r) => r.id === id);
+        if (!record) return;
+
+        const updatedDeleted = deletedRecords.filter((r) => r.id !== id);
+        const updatedActive = [record, ...activeRecords];
+
+        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
+        mutate("/api/rsvp?type=active", updatedActive, false);
         showToast(`Restored "${name}" back to Active RSVPs`, "success");
+
+        try {
+          const res = await fetch("/api/rsvp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "restore", id }),
+          });
+          const json = await res.json();
+          if (!res.ok || !json.success) {
+            showToast(json.message || "Failed to restore record", "info");
+            mutate("/api/rsvp?type=active");
+            mutate("/api/rsvp?type=deleted");
+          }
+        } catch (err) {
+          console.error("Restore error:", err);
+          showToast("Network error while restoring", "info");
+          mutate("/api/rsvp?type=active");
+          mutate("/api/rsvp?type=deleted");
+        }
       },
       "info"
     );
   };
 
-  const handlePermanentDelete = (id: string | number, name: string) => {
+  const handlePermanentDelete = async (id: string | number, name: string) => {
     openModal(
       "Permanently Delete?",
       `Are you sure you want to PERMANENTLY delete the RSVP for "${name}"? This action cannot be undone.`,
-      () => {
+      async () => {
         closeModal();
-        setRecords((prev) => prev.filter((r) => r.id !== id));
+        const record = deletedRecords.find((r) => r.id === id);
+        if (!record) return;
+
+        const updatedDeleted = deletedRecords.filter((r) => r.id !== id);
+        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
         showToast(`Permanently deleted "${name}"`, "info");
+
+        try {
+          const res = await fetch(`/api/rsvp?id=${id}&permanent=true`, { method: "DELETE" });
+          const json = await res.json();
+          if (!res.ok || !json.success) {
+            showToast(json.message || "Failed to permanently delete record", "info");
+            mutate("/api/rsvp?type=deleted");
+          }
+        } catch (err) {
+          console.error("Permanent Delete error:", err);
+          showToast("Network error while deleting", "info");
+          mutate("/api/rsvp?type=deleted");
+        }
       },
       "danger"
     );
@@ -381,7 +470,7 @@ export default function AdminDashboard() {
     setEditModal({ open: false, record: null });
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (!editModal.record) return;
 
     const updatedRecord: RsvpRecord = {
@@ -395,11 +484,32 @@ export default function AdminDashboard() {
       message: editForm.message,
     };
 
-    setRecords((prev) =>
-      prev.map((r) => (r.id === editModal.record!.id ? updatedRecord : r))
-    );
+    const { id: _omitId, ...updatedRecordWithoutId } = updatedRecord;
+
+    // Optimistic update
+    mutate("/api/rsvp?type=active", activeRecords.map((r) => r.id === editModal.record!.id ? updatedRecord : r), false);
+    mutate("/api/rsvp?type=deleted", deletedRecords.map((r) => r.id === editModal.record!.id ? updatedRecord : r), false);
     showToast(`Updated RSVP for "${editForm.full_name}"`, "success");
     closeEditModal();
+
+    try {
+      const res = await fetch("/api/rsvp", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editModal.record!.id, ...updatedRecordWithoutId }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        showToast(json.message || "Failed to update record", "info");
+        mutate("/api/rsvp?type=active");
+        mutate("/api/rsvp?type=deleted");
+      }
+    } catch (err) {
+      console.error("Update error:", err);
+      showToast("Network error while updating", "info");
+      mutate("/api/rsvp?type=active");
+      mutate("/api/rsvp?type=deleted");
+    }
   };
 
   const stats = useMemo(() => {
@@ -601,6 +711,13 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {(activeError || deletedError) && (
+            <div className="mx-4 md:mx-8 mt-4 p-4 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 font-sans">
+              <strong>Connection Notice:</strong> Unable to reach the database. Showing cached data if available.
+              <button onClick={() => { mutate("/api/rsvp?type=active"); mutate("/api/rsvp?type=deleted"); }} className="ml-3 underline font-semibold">Retry</button>
+            </div>
+          )}
+
           {/* Modal */}
           {modal.open && (
             <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
@@ -777,7 +894,10 @@ export default function AdminDashboard() {
 
                 <div className="flex items-center gap-2 font-sans">
                   <button
-                    onClick={() => setRecords([...SAMPLE_DATA])}
+                    onClick={() => {
+                      mutate("/api/rsvp?type=active");
+                      mutate("/api/rsvp?type=deleted");
+                    }}
                     className="inline-flex items-center gap-1.5 px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] transition whitespace-nowrap"
                   >
                     <span role="img" aria-label="refresh">🔄</span>
@@ -986,7 +1106,11 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {filteredRecords.length === 0 ? (
+              {loading ? (
+                <div className="py-8 md:py-10 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
+                  Loading RSVP records...
+                </div>
+              ) : filteredRecords.length === 0 ? (
                 <div className="py-8 md:py-10 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
                   {activeTab === "active"
                     ? "No active guest records found."

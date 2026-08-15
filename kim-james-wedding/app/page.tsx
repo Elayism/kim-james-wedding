@@ -94,8 +94,12 @@ export default function Home() {
         playsInline
       />
 
-      {/* Navigation */}
-      <NavBar isPlaying={!audioRef.current?.paused} onToggleAudio={toggleMusic} />
+      {/* Navigation - hide audio toggle during landing flow */}
+      <NavBar
+        isPlaying={!audioRef.current?.paused}
+        onToggleAudio={toggleMusic}
+        showAudioToggle={!showThumbnail && !showVideo}
+      />
       <FloatingPetals />
 
       {/* Main Scroll Container */}
@@ -104,8 +108,8 @@ export default function Home() {
         {showThumbnail && (
           <section
             id="hero"
-            className="snap-section relative h-screen md:h-screen"
-            style={{ backgroundColor: COLOR_A }}
+            className="snap-section fixed inset-0 h-screen md:h-screen"
+            style={{ backgroundColor: "#FDF6F0", zIndex: 20 }}
           >
             <div
               className="absolute inset-0 bg-cover bg-center cursor-pointer"
@@ -139,6 +143,7 @@ export default function Home() {
               isMuted={isMuted}
               onToggleMute={toggleMute}
               onVideoEnd={handleVideoEnd}
+              showMuteButton
             />
           </section>
         )}

@@ -7,9 +7,10 @@ interface HeroVideoProps {
   isMuted: boolean;
   onToggleMute: () => void;
   onVideoEnd: () => void;
+  showMuteButton?: boolean;
 }
 
-export default function HeroVideo({ audioRef, isMuted, onToggleMute, onVideoEnd }: HeroVideoProps) {
+export default function HeroVideo({ audioRef, isMuted, onToggleMute, onVideoEnd, showMuteButton = false }: HeroVideoProps) {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -110,8 +111,8 @@ export default function HeroVideo({ audioRef, isMuted, onToggleMute, onVideoEnd 
         </div>
       )}
 
-      {/* Mute/Unmute button - shown after interaction */}
-      {hasInteracted && (
+      {/* Mute/Unmute button - shown after interaction when showMuteButton is true */}
+      {hasInteracted && showMuteButton && (
         <button
           onClick={(e) => {
             e.stopPropagation();

@@ -13,7 +13,7 @@ const SECTIONS = [
   { id: "gallery", label: "Gallery" },
 ];
 
-export default function NavBar({ isPlaying, onToggleAudio }) {
+export default function NavBar({ isPlaying, onToggleAudio, showAudioToggle = true }) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -63,30 +63,32 @@ export default function NavBar({ isPlaying, onToggleAudio }) {
           </svg>
         </button>
 
-        {/* Audio Toggle Icon */}
-        <button
-          onClick={onToggleAudio}
-          className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full border transition-all duration-300 shadow-lg backdrop-blur-sm"
-          aria-label="Toggle Audio"
-          style={{ 
-            color: "var(--color-gold-brown)", 
-            borderColor: "var(--color-champagne)",
-            backgroundColor: "rgba(253, 248, 240, 0.85)"
-          }}
-        >
-          <div className={isPlaying ? "animate-spin-slow" : ""}>
-            {isPlaying ? (
-              <span className="text-lg leading-none">♫</span>
-            ) : (
-              <div className="relative">
-                <span className="text-lg leading-none opacity-50">♫</span>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-5 h-0.5 bg-[var(--color-gold-brown)] rotate-45 transform origin-center" />
+        {/* Audio Toggle Icon - hidden during landing video flow */}
+        {showAudioToggle && (
+          <button
+            onClick={onToggleAudio}
+            className="pointer-events-auto flex items-center justify-center w-11 h-11 rounded-full border transition-all duration-300 shadow-lg backdrop-blur-sm"
+            aria-label="Toggle Audio"
+            style={{
+              color: "var(--color-gold-brown)",
+              borderColor: "var(--color-champagne)",
+              backgroundColor: "rgba(253, 248, 240, 0.85)"
+            }}
+          >
+            <div className={isPlaying ? "animate-spin-slow" : ""}>
+              {isPlaying ? (
+                <span className="text-lg leading-none">♫</span>
+              ) : (
+                <div className="relative">
+                  <span className="text-lg leading-none opacity-50">♫</span>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-5 h-0.5 bg-[var(--color-gold-brown)] rotate-45 transform origin-center" />
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </button>
+              )}
+            </div>
+          </button>
+        )}
       </motion.div>
 
       {/* Slide-out Menu */}
