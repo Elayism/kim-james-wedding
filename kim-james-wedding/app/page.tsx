@@ -19,6 +19,7 @@ const COLOR_B = "var(--color-section-b)";
 export default function Home() {
   const [videoReady, setVideoReady] = useState(false);
   const [videoFinished, setVideoFinished] = useState(false);
+  const [videoRemoved, setVideoRemoved] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handleVideoReady = () => {
@@ -28,6 +29,10 @@ export default function Home() {
   const handleVideoEnd = () => {
     // Smooth transition: fade out video section and fade in hero
     setVideoFinished(true);
+    // After fade-out transition completes, remove video section so hero becomes first scrollable section
+    setTimeout(() => {
+      setVideoRemoved(true);
+    }, 1000);
     // Re-enable page scrolling after video finishes
     document.body.style.overflow = "";
   };
@@ -90,20 +95,22 @@ export default function Home() {
       {/* Main Scroll Container - starts immediately with video */}
       <div className="snap-container">
         {/* Video Section - full viewport, scroll locked until video ends */}
-        <section
-          id="hero"
-          className={`snap-section relative h-screen md:h-screen transition-all duration-1000 ${
-            videoFinished ? "opacity-0 pointer-events-none" : "opacity-100"
-          }`}
-          style={{ backgroundColor: COLOR_A }}
-        >
-          <div className="absolute inset-0">
-            <HeroVideo
-              onVideoReady={handleVideoReady}
-              onVideoEnd={handleVideoEnd}
-            />
-          </div>
-        </section>
+        {!videoRemoved && (
+          <section
+            id="hero"
+            className={`snap-section relative h-screen md:h-screen transition-all duration-1000 ${
+              videoFinished ? "opacity-0 pointer-events-none" : "opacity-100"
+            }`}
+            style={{ backgroundColor: COLOR_A }}
+          >
+            <div className="absolute inset-0">
+              <HeroVideo
+                onVideoReady={handleVideoReady}
+                onVideoEnd={handleVideoEnd}
+              />
+            </div>
+          </section>
+        )}
 
         {/* Hero Section - fades in after video ends with subtle zoom-out */}
         <section

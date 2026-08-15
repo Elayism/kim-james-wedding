@@ -326,6 +326,7 @@ export default function AdminDashboard() {
       "Move to Deleted History?",
       `Are you sure you want to move RSVP for "${name}" to Deleted History?`,
       () => {
+        closeModal();
         setRecords((prev) =>
           prev.map((r) => (r.id === id ? { ...r, is_deleted: true } : r))
         );
@@ -340,6 +341,7 @@ export default function AdminDashboard() {
       "Restore RSVP?",
       `Are you sure you want to restore "${name}" back to Active RSVPs?`,
       () => {
+        closeModal();
         setRecords((prev) =>
           prev.map((r) => (r.id === id ? { ...r, is_deleted: false } : r))
         );
@@ -354,6 +356,7 @@ export default function AdminDashboard() {
       "Permanently Delete?",
       `Are you sure you want to PERMANENTLY delete the RSVP for "${name}"? This action cannot be undone.`,
       () => {
+        closeModal();
         setRecords((prev) => prev.filter((r) => r.id !== id));
         showToast(`Permanently deleted "${name}"`, "info");
       },
