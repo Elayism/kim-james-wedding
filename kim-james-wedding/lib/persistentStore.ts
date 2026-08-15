@@ -25,54 +25,7 @@ const DATA_FILE = isVercel
   ? "/tmp/rsvps.json"
   : path.join(process.cwd(), "data", "rsvps.json");
 
-const DEFAULT_RECORDS: RsvpRecord[] = [
-  {
-    id: "1",
-    full_name: "Maria Santos",
-    email: "maria@example.com",
-    attending: "accepts",
-    guest_count: 3,
-    meal_preference: "Chicken",
-    dietary_restrictions: "Nut Allergy",
-    message: "So happy for both of you! See you there!",
-    guest_details: [
-      { name: "Maria Santos", meal: "Chicken" },
-      { name: "Juan Santos", meal: "Beef" },
-      { name: "Sofia Santos", meal: "Chicken" },
-    ],
-    is_deleted: false,
-    created_at: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
-  },
-  {
-    id: "2",
-    full_name: "Carlos Reyes",
-    email: "carlos@example.com",
-    attending: "accepts",
-    guest_count: 2,
-    meal_preference: "Beef",
-    dietary_restrictions: "None",
-    message: "Congratulations Kim & James!",
-    guest_details: [
-      { name: "Carlos Reyes", meal: "Beef" },
-      { name: "Elena Reyes", meal: "Fish" },
-    ],
-    is_deleted: false,
-    created_at: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
-  },
-  {
-    id: "3",
-    full_name: "Ana Cruz",
-    email: "ana@example.com",
-    attending: "declines",
-    guest_count: 1,
-    meal_preference: "Vegetarian",
-    dietary_restrictions: null,
-    message: "Wishing you both a lifetime of love and happiness!",
-    guest_details: [],
-    is_deleted: false,
-    created_at: new Date(Date.now() - 3600000 * 24 * 1).toISOString(),
-  },
-];
+const DEFAULT_RECORDS: RsvpRecord[] = [];
 
 let fileCache: RsvpRecord[] | null = null;
 
