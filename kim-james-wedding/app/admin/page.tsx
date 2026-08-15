@@ -103,14 +103,6 @@ function IconCheck() {
   );
 }
 
-function IconEdit() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-    </svg>
-  );
-}
-
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
@@ -126,21 +118,6 @@ export default function AdminDashboard() {
     onConfirm: () => void;
     variant?: "danger" | "info";
   }>({ open: false, title: "", message: "", onConfirm: () => {} });
-
-  const [editModal, setEditModal] = useState<{
-    open: boolean;
-    record: RsvpRecord | null;
-  }>({ open: false, record: null });
-
-  const [editForm, setEditForm] = useState({
-    full_name: "",
-    email: "",
-    attending: "accepts" as "accepts" | "declines",
-    guest_count: 1,
-    meal_preference: "Chicken",
-    dietary_restrictions: "",
-    message: "",
-  });
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,62 +182,6 @@ export default function AdminDashboard() {
       },
       "danger"
     );
-  };
-
-  const openEditModal = (record: RsvpRecord) => {
-    setEditForm({
-      full_name: record.full_name || "",
-      email: record.email || "",
-      attending: record.attending,
-      guest_count: Number(record.guest_count) || 1,
-      meal_preference: record.meal_preference || "Chicken",
-      dietary_restrictions: record.dietary_restrictions || "",
-      message: record.message || "",
-    });
-    setEditModal({ open: true, record });
-  };
-
-  const closeEditModal = () => {
-    setEditModal({ open: false, record: null });
-  };
-
-  const handleEditSave = async () => {
-    if (!editModal.record) return;
-
-    const updatedRecord: RsvpRecord = {
-      ...editModal.record,
-      full_name: editForm.full_name,
-      email: editForm.email || null,
-      attending: editForm.attending,
-      guest_count: editForm.guest_count,
-      meal_preference: editForm.meal_preference,
-      dietary_restrictions: editForm.dietary_restrictions || null,
-      message: editForm.message,
-    };
-
-    const { id: _omitId, ...updatedRecordWithoutId } = updatedRecord;
-
-    // Optimistic update
-    mutate("/api/rsvp?type=active", activeRecords.map((r) => r.id === editModal.record!.id ? updatedRecord : r), false);
-    showToast(`Updated RSVP for "${editForm.full_name}"`, "success");
-    closeEditModal();
-
-    try {
-      const res = await fetch("/api/rsvp", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editModal.record!.id, ...updatedRecordWithoutId }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        showToast(json.message || "Failed to update record", "info");
-        mutate("/api/rsvp?type=active");
-      }
-    } catch (err) {
-      console.error("Update error:", err);
-      showToast("Network error while updating", "info");
-      mutate("/api/rsvp?type=active");
-    }
   };
 
   const stats = useMemo(() => {
@@ -504,118 +425,6 @@ export default function AdminDashboard() {
                     }`}
                   >
                     Confirm
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Edit Modal */}
-          {editModal.open && (
-            <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeEditModal} />
-              <div className="relative bg-[var(--color-antique-white)] rounded-xl border border-[var(--color-champagne)] shadow-2xl max-w-lg w-full p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-serif text-[var(--color-gold-brown)]">Edit RSVP</h3>
-                  <button onClick={closeEditModal} className="p-1 rounded-full hover:bg-[var(--color-champagne)]/30 transition">
-                    <IconX />
-                  </button>
-                </div>
-                <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Full Name</label>
-                    <input
-                      type="text"
-                      value={editForm.full_name}
-                      onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                      className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Email</label>
-                    <input
-                      type="email"
-                      value={editForm.email}
-                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                      className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Status</label>
-                      <select
-                        value={editForm.attending}
-                        onChange={(e) => setEditForm({ ...editForm, attending: e.target.value as "accepts" | "declines" })}
-                        className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
-                      >
-                        <option value="accepts">Attending</option>
-                        <option value="declines">Declined</option>
-                      </select>
-                    </div>
-                    {editForm.attending === "accepts" && (
-                      <div>
-                        <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Guest Count</label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={editForm.guest_count}
-                          onChange={(e) => setEditForm({ ...editForm, guest_count: parseInt(e.target.value) || 1 })}
-                          className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  {editForm.attending === "accepts" && (
-                    <div>
-                      <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Meal Preference</label>
-                      <select
-                        value={editForm.meal_preference}
-                        onChange={(e) => setEditForm({ ...editForm, meal_preference: e.target.value })}
-                        className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
-                      >
-                        <option value="Chicken">Chicken</option>
-                        <option value="Beef">Beef</option>
-                        <option value="Fish">Fish</option>
-                        <option value="Vegetarian">Vegetarian</option>
-                        <option value="Pork">Pork</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                  )}
-                  {editForm.attending === "accepts" && (
-                    <div>
-                      <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Dietary Restrictions</label>
-                      <input
-                        type="text"
-                        value={editForm.dietary_restrictions}
-                        onChange={(e) => setEditForm({ ...editForm, dietary_restrictions: e.target.value })}
-                        className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Message</label>
-                    <textarea
-                      value={editForm.message}
-                      onChange={(e) => setEditForm({ ...editForm, message: e.target.value })}
-                      rows={3}
-                      className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-[var(--color-champagne)]">
-                  <button
-                    onClick={closeEditModal}
-                    className="px-4 py-2 rounded-lg text-xs font-sans font-semibold border border-[var(--color-champagne)] text-[var(--color-espresso)] hover:bg-[var(--color-ivory)] transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleEditSave}
-                    className="px-4 py-2 rounded-lg text-xs font-sans font-semibold text-[var(--color-ivory)] shadow transition hover:opacity-90"
-                    style={{ backgroundColor: "var(--color-gold-brown)" }}
-                  >
-                    Save Changes
                   </button>
                 </div>
               </div>
@@ -930,14 +739,6 @@ export default function AdminDashboard() {
                             </td>
                              <td className="py-3 px-2 md:px-3 text-right">
                                <div className="flex flex-col gap-1.5 items-end">
-                                 <button
-                                   onClick={() => openEditModal(r)}
-                                   className="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
-                                   title="Edit RSVP"
-                                 >
-                                   <IconEdit />
-                                   Edit
-                                 </button>
                                  <button
                                    onClick={() => handleDelete(r.id, r.full_name)}
                                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"

@@ -22,6 +22,8 @@ export default function Home() {
   const [videoVisible, setVideoVisible] = useState(false);
   const [videoFinished, setVideoFinished] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [videoFading, setVideoFading] = useState(false);
+  const [heroBgWhite, setHeroBgWhite] = useState(false);
 
   // Single global audio instance for the whole site
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -45,13 +47,17 @@ export default function Home() {
   };
 
   const handleVideoEnd = () => {
-    // Fade out video and show hero section
-    setVideoFinished(true);
-    setVideoVisible(false);
-    // Re-enable scrolling after transition
+    // Start white fade out of video
+    setVideoFading(true);
     setTimeout(() => {
-      document.body.style.overflow = "";
-    }, 1000);
+      setVideoVisible(false);
+      setVideoFinished(true);
+      setVideoFading(false);
+      setHeroBgWhite(true);
+      setTimeout(() => {
+        setHeroBgWhite(false);
+      }, 50);
+    }, 500);
   };
 
   const toggleMute = () => {
@@ -153,10 +159,13 @@ export default function Home() {
         <section
           className="fixed inset-0 h-screen md:h-screen"
           style={{
-            backgroundColor: "#111",
+            backgroundColor: videoFading ? "#fff" : "#111",
             zIndex: 40,
-            opacity: videoVisible ? 1 : 0,
+            opacity: videoVisible && !videoFading ? 1 : 0,
             pointerEvents: videoVisible ? "auto" : "none",
+            transition: videoFading
+              ? "opacity 500ms ease-out, background-color 500ms ease-out"
+              : "none",
           }}
         >
             <HeroVideo
@@ -174,7 +183,10 @@ export default function Home() {
           className={`snap-section relative h-screen md:h-screen transition-all duration-1000 ${
             videoFinished ? "opacity-100 scale-100" : "opacity-0 scale-105"
           }`}
-          style={{ backgroundColor: COLOR_B }}
+          style={{
+            backgroundColor: heroBgWhite ? "#fff" : COLOR_B,
+            transition: "background-color 500ms ease-out",
+          }}
         >
           <Hero />
         </section>
