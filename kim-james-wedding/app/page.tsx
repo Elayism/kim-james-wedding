@@ -1,44 +1,52 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import FadeInSection from "@/components/FadeInSection";
-import EnvelopeIntro from "@/components/EnvelopeIntro";
-import Hero from "@/components/Hero";
+import HeroVideo from "@/components/HeroVideo";
+import HeartLoader from "@/components/HeartLoader";
 import NavBar from "@/components/NavBar";
 import OurStory from "@/components/OurStory";
 import EventDetails from "@/components/EventDetails";
 import DressCode from "@/components/DressCode";
+import RSVPForm from "@/components/RSVPForm";
 import GiftRegistry from "@/components/GiftRegistry";
 import Gallery from "@/components/Gallery";
 import Footer from "@/components/Footer";
-import RSVPForm from "@/components/RSVPForm";
-
 import FloatingPetals from "@/components/FloatingPetals";
 
 export default function Home() {
-  const [showSite, setShowSite] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const handleOpenComplete = () => {
-    setShowSite(true);
+  const handleVideoReady = () => {
+    setVideoReady(true);
+    setShowFallback(false);
   };
 
-  const handlePlayAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = false;
-      audioRef.current.volume = 1.0;
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch((err) => {
-            console.error("Audio play failed:", err);
-          });
-      }
-    }
+  const handleVideoError = (error: Error) => {
+    console.error("Hero video error:", error);
+    setRetryCount((prev) => prev + 1);
+    setShowFallback(true);
+  };
+
+  const handleShowFallback = () => {
+    setShowFallback(true);
+  };
+
+  const handleHideFallback = () => {
+    setShowFallback(false);
+  };
+
+  const handleVideoPlay = () => {
+    setHasInteracted(true);
+    setIsPlaying(true);
+  };
+
+  const handleVideoPause = () => {
+    setIsPlaying(false);
   };
 
   const toggleMusic = () => {
@@ -65,16 +73,16 @@ export default function Home() {
   useEffect(() => {
     const audioEl = audioRef.current;
     if (!audioEl) return;
-    
+
     const handlePause = () => setIsPlaying(false);
     const handlePlay = () => setIsPlaying(true);
-    
-    audioEl.addEventListener('pause', handlePause);
-    audioEl.addEventListener('play', handlePlay);
-    
+
+    audioEl.addEventListener("pause", handlePause);
+    audioEl.addEventListener("play", handlePlay);
+
     return () => {
-      audioEl.removeEventListener('pause', handlePause);
-      audioEl.removeEventListener('play', handlePlay);
+      audioEl.removeEventListener("pause", handlePause);
+      audioEl.removeEventListener("play", handlePlay);
     };
   }, []);
 
@@ -89,68 +97,95 @@ export default function Home() {
         playsInline
       />
 
-      {/* Phase 1: Envelope Video (full screen overlay, hidden after video ends) */}
-      {!showSite && (
-        <section id="envelope" className="fixed inset-0 z-40">
-          <EnvelopeIntro 
-            onOpenComplete={handleOpenComplete} 
-            onPlayAudio={handlePlayAudio} 
-          />
-        </section>
-      )}
+      {/* Navigation */}
+      <NavBar isPlaying={isPlaying} onToggleAudio={toggleMusic} />
+      <FloatingPetals />
 
-      {/* Phase 2: Main Wedding Site (revealed after video) */}
-      {showSite && (
-        <div className="animate-fade-in">
-          <NavBar isPlaying={isPlaying} onToggleAudio={toggleMusic} />
-          <FloatingPetals />
-          
-          {/* All sections in snap scroll container */}
-          <div className="snap-container h-dvh">
-            {/* Hero Section */}
-            <section id="hero" className="snap-section min-h-screen md:h-screen">
-              <Hero />
-            </section>
-
-            {/* Our Story Section */}
-            <section id="our-story" className="snap-section min-h-screen py-6 md:py-0">
-              <OurStory />
-            </section>
-
-            {/* Event Details Section */}
-            <section id="event-details" className="snap-section min-h-screen py-6 md:py-0">
-              <EventDetails />
-            </section>
-
-            {/* Dress Code Section */}
-            <section id="dress-code" className="snap-section min-h-screen py-6 md:py-0">
-              <DressCode />
-            </section>
-
-            {/* RSVP Section */}
-            <section id="rsvp" className="snap-section min-h-screen py-6 md:py-0">
-              <FadeInSection>
-                <RSVPForm />
-              </FadeInSection>
-            </section>
-
-            {/* Gift Registry Section */}
-            <section id="gift-registry" className="snap-section min-h-screen py-6 md:py-0">
-              <GiftRegistry />
-            </section>
-
-            {/* Gallery Section */}
-            <section id="gallery" className="snap-section min-h-screen py-6 md:py-0">
-              <Gallery />
-            </section>
-
-            {/* Footer Section */}
-            <section id="footer" className="snap-section min-h-screen py-6 md:py-0">
-              <Footer />
-            </section>
+      {/* Main Scroll Container */}
+      <div className="snap-container h-dvh h-screen">
+      {/* Hero Section with Video */}
+      <section
+        id="hero"
+        className="snap-section relative h-dvh h-screen bg-black"
+      >
+          <div className="absolute inset-0">
+            <HeroVideo
+              onVideoReady={handleVideoReady}
+              onVideoError={handleVideoError}
+              onShowFallback={handleShowFallback}
+              onHideFallback={handleHideFallback}
+            />
           </div>
-        </div>
-      )}
+
+          {/* Heart Loader Fallback */}
+          {showFallback && (
+            <HeartLoader isVisible={showFallback} retryCount={retryCount} />
+          )}
+        </section>
+
+        {/* Our Story Section */}
+        <section
+          id="our-story"
+          className="snap-section min-h-screen py-6 md:py-0"
+          style={{ backgroundColor: "var(--color-antique-white)" }}
+        >
+          <OurStory />
+        </section>
+
+        {/* Event Details Section */}
+        <section
+          id="event-details"
+          className="snap-section min-h-screen py-6 md:py-0"
+          style={{ backgroundColor: "var(--color-ivory)" }}
+        >
+          <EventDetails />
+        </section>
+
+        {/* Dress Code Section */}
+        <section
+          id="dress-code"
+          className="snap-section min-h-screen py-6 md:py-0"
+          style={{ backgroundColor: "var(--color-ecru)" }}
+        >
+          <DressCode />
+        </section>
+
+        {/* RSVP Section */}
+        <section
+          id="rsvp"
+          className="snap-section min-h-screen py-6 md:py-0"
+          style={{ backgroundColor: "var(--color-antique-white)" }}
+        >
+          <RSVPForm />
+        </section>
+
+        {/* Gift Registry Section */}
+        <section
+          id="gift-registry"
+          className="snap-section min-h-screen py-6 md:py-0"
+          style={{ backgroundColor: "var(--color-ivory)" }}
+        >
+          <GiftRegistry />
+        </section>
+
+        {/* Gallery Section */}
+        <section
+          id="gallery"
+          className="snap-section min-h-screen py-6 md:py-0"
+          style={{ backgroundColor: "var(--color-ecru)" }}
+        >
+          <Gallery />
+        </section>
+
+        {/* Footer Section */}
+        <section
+          id="footer"
+          className="snap-section min-h-screen py-6 md:py-0"
+          style={{ backgroundColor: "var(--color-antique-white)" }}
+        >
+          <Footer />
+        </section>
+      </div>
     </>
   );
 }

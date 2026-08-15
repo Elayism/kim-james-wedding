@@ -26,7 +26,7 @@ body {
   min-height: 100%;
   min-height: 100dvh;
   margin: 0;
-  background-color: var(--color-ivory);
+  background-color: var(--color-antique-white);
   color: var(--color-espresso);
   font-family: var(--font-cormorant), "Georgia", serif;
   -webkit-font-smoothing: antialiased;
@@ -34,6 +34,7 @@ body {
   text-rendering: optimizeLegibility;
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -127,6 +128,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ─── Snap Scrolling ───────────────────────────────────────────────────────── */
 .snap-container {
+  height: 100dvh;
+  height: 100vh;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: y proximity;
@@ -136,10 +139,33 @@ h1, h2, h3, h4, h5, h6 {
 .snap-section {
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  min-height: 100dvh;
+  min-height: 100vh;
 }
 
 @media (min-width: 768px) {
   .snap-section {
     scroll-snap-align: center;
+    min-height: 100dvh;
+    min-height: 100vh;
   }
+}
+
+/* ─── Video Fade Transitions ───────────────────────────────────────────────── */
+.video-ready {
+  animation: videoFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes videoFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.video-fade-out {
+  animation: videoFadeOut 0.5s ease-out forwards;
+}
+
+@keyframes videoFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }

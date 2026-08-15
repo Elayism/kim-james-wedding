@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Cormorant_Garamond } from "next/font/google";
-import AppLoader from "@/components/AppLoader";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -22,7 +21,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#FDF8F0",
+  themeColor: "#FAF3E7",
 };
 
 export const metadata: Metadata = {
@@ -40,8 +39,8 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
-      <body className={`${playfair.variable} ${cormorant.variable}`}>
-        <AppLoader>{children}</AppLoader>
+      <body className={`${playfair.variable} ${cormorant.variable} bg-[var(--color-antique-white)] text-[var(--color-espresso)] overflow-x-hidden`}>
+        {children}
       </body>
     </html>
   );
