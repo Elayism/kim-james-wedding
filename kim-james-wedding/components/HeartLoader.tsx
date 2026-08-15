@@ -5,9 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 interface HeartLoaderProps {
   isVisible: boolean;
   retryCount: number;
+  backgroundColor?: string;
 }
 
-export default function HeartLoader({ isVisible, retryCount }: HeartLoaderProps) {
+export default function HeartLoader({ isVisible, retryCount, backgroundColor = "var(--color-antique-white)" }: HeartLoaderProps) {
   const isError = retryCount >= 3;
 
   return (
@@ -19,7 +20,7 @@ export default function HeartLoader({ isVisible, retryCount }: HeartLoaderProps)
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
           className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto"
-          style={{ backgroundColor: "var(--color-antique-white)" }}
+          style={{ backgroundColor }}
         >
           <motion.div
             animate={{

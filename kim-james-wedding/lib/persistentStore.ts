@@ -175,6 +175,19 @@ export async function permanentDeletePersistentRSVP(id: string): Promise<boolean
   return false;
 }
 
+export async function updatePersistentRSVP(id: string, updates: Partial<Omit<RsvpRecord, "id" | "created_at">>): Promise<RsvpRecord | null> {
+  const records = await loadFromFile();
+  if (!records) return null;
+
+  const index = records.findIndex((r) => String(r.id) === String(id));
+  if (index === -1) return null;
+
+  records[index] = { ...records[index], ...updates };
+  await saveToFile(records);
+  fileCache = records;
+  return records[index];
+}
+
 export async function checkDuplicatePersistentName(
   namesToCheck: string[]
 ): Promise<string | null> {

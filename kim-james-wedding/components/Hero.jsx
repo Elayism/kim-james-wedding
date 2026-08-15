@@ -5,8 +5,8 @@ import FadeInSection, { childVariants } from "./FadeInSection";
 
 export default function Hero() {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden bg-black">
-      {/* Background Image — slow 2s zoom-out from 1.08x to 1x */}
+    <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: "var(--color-espresso)" }}>
+      {/* Background Image — slow zoom-out from 1.1x to 1x */}
       <motion.div
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: 'url("/images/hero-bg.jpg")' }}
@@ -16,15 +16,15 @@ export default function Hero() {
       />
 
       {/* Subtle dark scrim so text stays readable over any photo */}
-      <div className="absolute inset-0 z-0 bg-black/30 pointer-events-none" />
+      <div className="absolute inset-0 z-0 pointer-events-none" style={{ backgroundColor: "rgba(58,46,40,0.35)" }} />
 
       {/* Main Content */}
       <FadeInSection className="relative z-10 flex flex-col items-center text-center px-4">
         {/* "We're getting married" label */}
         <motion.div
           variants={childVariants}
-          className="text-sm md:text-base uppercase tracking-[0.3em] text-white/80 mb-4 font-sans font-semibold"
-          style={{ textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}
+          className="text-sm md:text-base uppercase tracking-[0.3em] mb-4 font-sans font-semibold"
+          style={{ color: "rgba(253,248,240,0.85)", textShadow: "0 2px 8px rgba(58,46,40,0.6)" }}
         >
           We&apos;re getting married
         </motion.div>
@@ -32,8 +32,8 @@ export default function Hero() {
         {/* Names */}
         <motion.div variants={childVariants} className="relative inline-block mb-3">
           <h1
-            className="text-4xl md:text-6xl lg:text-7xl font-serif leading-tight text-white"
-            style={{ textShadow: "0 2px 16px rgba(0,0,0,0.5)" }}
+            className="text-4xl md:text-6xl lg:text-7xl font-serif leading-tight"
+            style={{ color: "var(--color-ivory)", textShadow: "0 2px 16px rgba(58,46,40,0.5)" }}
           >
             Kimberlyn &amp; James
           </h1>
@@ -53,8 +53,8 @@ export default function Hero() {
         {/* Date */}
         <motion.div
           variants={childVariants}
-          className="text-lg md:text-2xl font-serif text-white/90 mb-2 mt-4"
-          style={{ textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
+          className="text-lg md:text-2xl font-serif mb-2 mt-4"
+          style={{ color: "rgba(253,248,240,0.9)", textShadow: "0 2px 10px rgba(58,46,40,0.5)" }}
         >
           March 8, 2027 · Monday · 10:00 AM
         </motion.div>
@@ -62,8 +62,8 @@ export default function Hero() {
         {/* Tagline */}
         <motion.div
           variants={childVariants}
-          className="text-sm md:text-lg text-white/70 font-serif italic max-w-md text-center mt-2"
-          style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}
+          className="text-sm md:text-lg font-serif italic max-w-md text-center mt-2"
+          style={{ color: "rgba(253,248,240,0.7)", textShadow: "0 1px 6px rgba(58,46,40,0.5)" }}
         >
           A celebration of love and new beginnings.
         </motion.div>

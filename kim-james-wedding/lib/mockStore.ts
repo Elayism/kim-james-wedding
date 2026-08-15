@@ -23,5 +23,6 @@ export {
   softDeletePersistentRSVP as softDeleteInMemoryRSVP,
   restorePersistentRSVP as restoreInMemoryRSVP,
   permanentDeletePersistentRSVP as permanentDeleteInMemoryRSVP,
+  updatePersistentRSVP as updateInMemoryRSVP,
   checkDuplicatePersistentName as checkDuplicateName,
 } from "./persistentStore";

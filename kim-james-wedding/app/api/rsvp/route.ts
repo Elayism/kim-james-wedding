@@ -7,6 +7,7 @@ import {
   softDeleteInMemoryRSVP,
   restoreInMemoryRSVP,
   permanentDeleteInMemoryRSVP,
+  updateInMemoryRSVP,
   checkDuplicateName,
   RsvpRecord,
 } from "@/lib/mockStore";
@@ -182,6 +183,42 @@ export async function GET(request: Request) {
       'Pragma': 'no-cache',
     }
   });
+}
+
+// PUT: Update an RSVP record
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, message: "Missing record ID" }, { status: 400 });
+    }
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase
+          .from("rsvps")
+          .update(updates)
+          .eq("id", id);
+        if (!error) {
+          return NextResponse.json({ success: true, message: "RSVP updated successfully" });
+        }
+        console.warn("Supabase update failed:", error.message);
+      } catch (err) {
+        console.warn("Supabase update error:", err);
+      }
+    }
+
+    const updated = await updateInMemoryRSVP(String(id), updates);
+    if (!updated) {
+      return NextResponse.json({ success: false, message: "Record not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: "RSVP updated in local memory", data: updated });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error?.message || "Internal server error" }, { status: 500 });
+  }
 }
 
 // DELETE: Soft delete an RSVP record

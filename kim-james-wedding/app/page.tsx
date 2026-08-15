@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import HeroVideo from "@/components/HeroVideo";
 import HeartLoader from "@/components/HeartLoader";
 import NavBar from "@/components/NavBar";
+import Hero from "@/components/Hero";
 import OurStory from "@/components/OurStory";
 import EventDetails from "@/components/EventDetails";
 import DressCode from "@/components/DressCode";
@@ -13,11 +14,14 @@ import Gallery from "@/components/Gallery";
 import Footer from "@/components/Footer";
 import FloatingPetals from "@/components/FloatingPetals";
 
+const COLOR_A = "var(--color-section-a)";
+const COLOR_B = "var(--color-section-b)";
+
 export default function Home() {
   const [videoReady, setVideoReady] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [videoFinished, setVideoFinished] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handleVideoReady = () => {
@@ -39,24 +43,23 @@ export default function Home() {
     setShowFallback(false);
   };
 
+  const handleVideoEnd = () => {
+    setVideoFinished(true);
+  };
+
   const toggleMusic = () => {
     if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
+    if (audioRef.current.paused) {
       audioRef.current.muted = false;
       audioRef.current.volume = 1.0;
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch((err) => {
-            console.error("Audio play failed:", err);
-          });
+        playPromise.catch((err) => {
+          console.error("Audio play failed:", err);
+        });
       }
+    } else {
+      audioRef.current.pause();
     }
   };
 
@@ -64,15 +67,15 @@ export default function Home() {
     const audioEl = audioRef.current;
     if (!audioEl) return;
 
-    const handlePause = () => setIsPlaying(false);
-    const handlePlay = () => setIsPlaying(true);
+    const handlePlay = () => {};
+    const handlePause = () => {};
 
-    audioEl.addEventListener("pause", handlePause);
     audioEl.addEventListener("play", handlePlay);
+    audioEl.addEventListener("pause", handlePause);
 
     return () => {
-      audioEl.removeEventListener("pause", handlePause);
       audioEl.removeEventListener("play", handlePlay);
+      audioEl.removeEventListener("pause", handlePause);
     };
   }, []);
 
@@ -88,16 +91,16 @@ export default function Home() {
       />
 
       {/* Navigation */}
-      <NavBar isPlaying={isPlaying} onToggleAudio={toggleMusic} />
+      <NavBar isPlaying={!audioRef.current?.paused} onToggleAudio={toggleMusic} />
       <FloatingPetals />
 
       {/* Main Scroll Container */}
       <div className="snap-container">
-        {/* Hero Section with Video */}
+        {/* Video Section */}
         <section
           id="hero"
           className="snap-section relative h-screen md:h-screen"
-          style={{ backgroundColor: "var(--color-antique-white)" }}
+          style={{ backgroundColor: COLOR_A }}
         >
           <div className="absolute inset-0">
             <HeroVideo
@@ -105,20 +108,31 @@ export default function Home() {
               onVideoError={handleVideoError}
               onShowFallback={handleShowFallback}
               onHideFallback={handleHideFallback}
+              onVideoEnd={handleVideoEnd}
             />
           </div>
 
           {/* Heart Loader Fallback - positioned within hero, covers hero only */}
           {showFallback && (
-            <HeartLoader isVisible={showFallback} retryCount={retryCount} />
+            <HeartLoader isVisible={showFallback} retryCount={retryCount} backgroundColor={COLOR_A} />
           )}
+        </section>
+
+        {/* Hero Section - transitions in after video ends */}
+        <section
+          className={`snap-section relative h-screen md:h-screen transition-all duration-1000 ${
+            videoFinished ? "opacity-100 scale-100" : "opacity-0 scale-105"
+          }`}
+          style={{ backgroundColor: COLOR_B }}
+        >
+          <Hero />
         </section>
 
         {/* Our Story Section */}
         <section
           id="our-story"
           className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
-          style={{ backgroundColor: "var(--color-antique-white)" }}
+          style={{ backgroundColor: COLOR_A }}
         >
           <OurStory />
         </section>
@@ -127,7 +141,7 @@ export default function Home() {
         <section
           id="event-details"
           className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
-          style={{ backgroundColor: "var(--color-ivory)" }}
+          style={{ backgroundColor: COLOR_B }}
         >
           <EventDetails />
         </section>
@@ -136,7 +150,7 @@ export default function Home() {
         <section
           id="dress-code"
           className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
-          style={{ backgroundColor: "var(--color-ecru)" }}
+          style={{ backgroundColor: COLOR_A }}
         >
           <DressCode />
         </section>
@@ -145,7 +159,7 @@ export default function Home() {
         <section
           id="rsvp"
           className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
-          style={{ backgroundColor: "var(--color-antique-white)" }}
+          style={{ backgroundColor: COLOR_B }}
         >
           <RSVPForm />
         </section>
@@ -154,7 +168,7 @@ export default function Home() {
         <section
           id="gift-registry"
           className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
-          style={{ backgroundColor: "var(--color-ivory)" }}
+          style={{ backgroundColor: COLOR_A }}
         >
           <GiftRegistry />
         </section>
@@ -163,7 +177,7 @@ export default function Home() {
         <section
           id="gallery"
           className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
-          style={{ backgroundColor: "var(--color-ecru)" }}
+          style={{ backgroundColor: COLOR_B }}
         >
           <Gallery />
         </section>
@@ -172,7 +186,7 @@ export default function Home() {
         <section
           id="footer"
           className="snap-section flex min-h-screen flex-col items-center justify-center py-6 md:py-0"
-          style={{ backgroundColor: "var(--color-antique-white)" }}
+          style={{ backgroundColor: COLOR_A }}
         >
           <Footer />
         </section>
