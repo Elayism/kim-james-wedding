@@ -685,41 +685,47 @@ export default function AdminDashboard() {
                         <option value="declines">Declined</option>
                       </select>
                     </div>
+                    {editForm.attending === "accepts" && (
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Guest Count</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={editForm.guest_count}
+                          onChange={(e) => setEditForm({ ...editForm, guest_count: parseInt(e.target.value) || 1 })}
+                          className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  {editForm.attending === "accepts" && (
                     <div>
-                      <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Guest Count</label>
+                      <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Meal Preference</label>
+                      <select
+                        value={editForm.meal_preference}
+                        onChange={(e) => setEditForm({ ...editForm, meal_preference: e.target.value })}
+                        className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
+                      >
+                        <option value="Chicken">Chicken</option>
+                        <option value="Beef">Beef</option>
+                        <option value="Fish">Fish</option>
+                        <option value="Vegetarian">Vegetarian</option>
+                        <option value="Pork">Pork</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  )}
+                  {editForm.attending === "accepts" && (
+                    <div>
+                      <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Dietary Restrictions</label>
                       <input
-                        type="number"
-                        min={1}
-                        value={editForm.guest_count}
-                        onChange={(e) => setEditForm({ ...editForm, guest_count: parseInt(e.target.value) || 1 })}
+                        type="text"
+                        value={editForm.dietary_restrictions}
+                        onChange={(e) => setEditForm({ ...editForm, dietary_restrictions: e.target.value })}
                         className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Meal Preference</label>
-                    <select
-                      value={editForm.meal_preference}
-                      onChange={(e) => setEditForm({ ...editForm, meal_preference: e.target.value })}
-                      className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
-                    >
-                      <option value="Chicken">Chicken</option>
-                      <option value="Beef">Beef</option>
-                      <option value="Fish">Fish</option>
-                      <option value="Vegetarian">Vegetarian</option>
-                      <option value="Pork">Pork</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Dietary Restrictions</label>
-                    <input
-                      type="text"
-                      value={editForm.dietary_restrictions}
-                      onChange={(e) => setEditForm({ ...editForm, dietary_restrictions: e.target.value })}
-                      className="w-full px-3 py-2 rounded border border-[var(--color-warm-sand)] bg-[var(--color-ivory)] text-[var(--color-espresso)] focus:outline-none focus:ring-1 focus:ring-[var(--color-gold-brown)] text-sm"
-                    />
-                  </div>
+                  )}
                   <div>
                     <label className="block text-xs uppercase tracking-wider text-[var(--color-espresso)] font-semibold mb-1 font-sans">Message</label>
                     <textarea
@@ -774,8 +780,8 @@ export default function AdminDashboard() {
                     onClick={() => setRecords([...SAMPLE_DATA])}
                     className="inline-flex items-center gap-1.5 px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] transition whitespace-nowrap"
                   >
-                    <IconRefresh />
-                    Reset
+                    <span role="img" aria-label="refresh">🔄</span>
+                    Refresh
                   </button>
                   <button
                     onClick={exportCSV}
@@ -992,12 +998,11 @@ export default function AdminDashboard() {
                     <table className="w-full text-left text-[10px] md:text-xs font-sans border-collapse">
                       <thead>
                         <tr className="border-b border-[var(--color-champagne)] text-[var(--color-gold-brown)] uppercase tracking-wider font-semibold">
-                          <th className="py-3 px-2 md:px-3 text-left">Primary Contact</th>
-                          <th className="py-3 px-2 md:px-3 text-center">Status</th>
-                          <th className="py-3 px-2 md:px-3 text-center">Guests</th>
-                          <th className="py-3 px-2 md:px-3 text-left">Guest List & Meals</th>
-                          <th className="py-3 px-2 md:px-3 text-left">Dietary / Notes</th>
-                          <th className="py-3 px-2 md:px-3 text-right">Actions</th>
+                      <th className="py-3 px-2 md:px-3 text-left">Primary Contact</th>
+                      <th className="py-3 px-2 md:px-3 text-center">Status</th>
+                      <th className="py-3 px-2 md:px-3 text-left">Message / Notes</th>
+                      <th className="py-3 px-2 md:px-3 text-left">Submitted</th>
+                      <th className="py-3 px-2 md:px-3 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[var(--color-champagne)]/40">
@@ -1022,41 +1027,42 @@ export default function AdminDashboard() {
                                 {r.attending === "accepts" ? "Attending" : "Declined"}
                               </span>
                             </td>
-                            <td className="py-3 px-2 md:px-3 text-center font-bold text-[var(--color-gold-brown)] text-[11px] md:text-xs">
-                              {r.guest_count}
-                            </td>
                             <td className="py-3 px-2 md:px-3">
-                              {r.guest_details && r.guest_details.length > 0 ? (
-                                <ul className="space-y-1">
-                                  {r.guest_details.map((g, gIdx) => (
-                                    <li key={gIdx} className="flex items-center gap-1 flex-wrap">
-                                      <span className="w-1 h-1 rounded-full bg-[var(--color-gold-brown)] inline-block flex-shrink-0" />
-                                      <span className="font-medium text-[var(--color-espresso)] text-[10px] md:text-xs">
-                                        {g.name}:
-                                      </span>
-                                      <span className="text-[var(--color-soft-taupe)] font-semibold text-[10px] md:text-xs">
-                                        {g.meal}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
+                              {r.attending === "accepts" ? (
+                                <div className="space-y-1">
+                                  {r.guest_details && r.guest_details.length > 0 ? (
+                                    <ul className="space-y-1">
+                                      {r.guest_details.map((g, gIdx) => (
+                                        <li key={gIdx} className="flex items-center gap-1 flex-wrap">
+                                          <span className="w-1 h-1 rounded-full bg-[var(--color-gold-brown)] inline-block flex-shrink-0" />
+                                          <span className="font-medium text-[var(--color-espresso)] text-[10px] md:text-xs">
+                                            {g.name}:
+                                          </span>
+                                          <span className="text-[var(--color-soft-taupe)] font-semibold text-[10px] md:text-xs">
+                                            {g.meal}
+                                          </span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  ) : (
+                                    <span className="text-[var(--color-soft-taupe)] italic text-[10px] md:text-xs">
+                                      {r.meal_preference}
+                                    </span>
+                                  )}
+                                  {r.dietary_restrictions && (
+                                    <div className="text-[10px] md:text-[11px] text-amber-900 font-semibold">
+                                      {r.dietary_restrictions}
+                                    </div>
+                                  )}
+                                </div>
                               ) : (
                                 <span className="text-[var(--color-soft-taupe)] italic text-[10px] md:text-xs">
-                                  {r.meal_preference}
+                                  {r.message || "No message"}
                                 </span>
                               )}
                             </td>
-                            <td className="py-3 px-2 md:px-3">
-                              {r.dietary_restrictions && (
-                                <div className="text-[10px] md:text-[11px] text-amber-900 font-semibold mb-0.5">
-                                  {r.dietary_restrictions}
-                                </div>
-                              )}
-                              {r.message && (
-                                <div className="text-[10px] md:text-[11px] text-[var(--color-espresso)] italic line-clamp-2">
-                                  &quot;{r.message}&quot;
-                                </div>
-                              )}
+                            <td className="py-3 px-2 md:px-3 text-xs font-sans text-[var(--color-soft-taupe)] whitespace-nowrap">
+                              {r.created_at ? new Date(r.created_at).toLocaleString() : "N/A"}
                             </td>
                             <td className="py-3 px-2 md:px-3 text-right">
                               {activeTab === "active" ? (

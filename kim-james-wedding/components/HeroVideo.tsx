@@ -30,12 +30,20 @@ export default function HeroVideo({ onVideoReady, onVideoEnd }: HeroVideoProps) 
 
     if (!hasInteracted) {
       setHasInteracted(true);
-      videoRef.current.muted = false;
-      videoRef.current.volume = 1.0;
+      // Keep video muted, just play it
       videoRef.current.play().then(() => {
         setIsPlaying(true);
       }).catch((err) => {
         console.error("Video play failed:", err);
+      });
+
+      // Play background music - using existing audio file
+      // Note: Add /wedding-music.mp3 to public folder if a different track is desired
+      const music = new Audio("/audio/cant-help-falling.mp3");
+      music.loop = true;
+      music.volume = 0.5;
+      music.play().catch((err) => {
+        console.error("Music play failed:", err);
       });
     }
   }, [hasInteracted]);
@@ -67,6 +75,7 @@ export default function HeroVideo({ onVideoReady, onVideoEnd }: HeroVideoProps) 
       <video
         ref={videoRef}
         src="/envelope-open.mp4"
+        poster="/envelope-poster.jpg"
         playsInline
         preload="auto"
         muted
