@@ -16,7 +16,6 @@ import FloatingPetals from "@/components/FloatingPetals";
 export default function Home() {
   const [videoReady, setVideoReady] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -41,7 +40,6 @@ export default function Home() {
   };
 
   const handleVideoPlay = () => {
-    setHasInteracted(true);
     setIsPlaying(true);
   };
 
@@ -102,12 +100,13 @@ export default function Home() {
       <FloatingPetals />
 
       {/* Main Scroll Container */}
-      <div className="snap-container h-dvh h-screen">
-      {/* Hero Section with Video */}
-      <section
-        id="hero"
-        className="snap-section relative h-dvh h-screen bg-black"
-      >
+      <div className="snap-container">
+        {/* Hero Section with Video */}
+        <section
+          id="hero"
+          className="snap-section relative h-screen md:h-screen"
+          style={{ backgroundColor: "var(--color-antique-white)" }}
+        >
           <div className="absolute inset-0">
             <HeroVideo
               onVideoReady={handleVideoReady}
@@ -117,7 +116,7 @@ export default function Home() {
             />
           </div>
 
-          {/* Heart Loader Fallback */}
+          {/* Heart Loader Fallback - positioned within hero, covers hero only */}
           {showFallback && (
             <HeartLoader isVisible={showFallback} retryCount={retryCount} />
           )}

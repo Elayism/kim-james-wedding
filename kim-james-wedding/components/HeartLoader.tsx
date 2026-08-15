@@ -4,10 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface HeartLoaderProps {
   isVisible: boolean;
-  retryCount?: number;
+  retryCount: number;
 }
 
-export default function HeartLoader({ isVisible, retryCount = 0 }: HeartLoaderProps) {
+export default function HeartLoader({ isVisible, retryCount }: HeartLoaderProps) {
+  const isError = retryCount >= 3;
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -16,7 +18,7 @@ export default function HeartLoader({ isVisible, retryCount = 0 }: HeartLoaderPr
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="fixed inset-0 z-[60] flex flex-col items-center justify-center"
+          className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto"
           style={{ backgroundColor: "var(--color-antique-white)" }}
         >
           <motion.div
@@ -48,11 +50,11 @@ export default function HeartLoader({ isVisible, retryCount = 0 }: HeartLoaderPr
             className="text-center px-6 max-w-sm"
           >
             <span className="block text-lg md:text-xl font-serif text-[var(--color-gold-brown)] mb-2">
-              {retryCount > 0 ? "Hang in there…" : "Love is loading…"}
+              {isError ? "Having trouble loading…" : "Love is loading…"}
             </span>
             <span className="block text-sm md:text-base text-[var(--color-soft-taupe)] font-serif italic">
-              {retryCount > 0
-                ? "We're re preparing your invitation with extra care."
+              {isError
+                ? "Please check your connection and try again."
                 : "Please hold our hearts while we prepare your invitation."}
             </span>
           </motion.p>
