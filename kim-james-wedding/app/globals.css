@@ -23,7 +23,7 @@ html {
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  background-color: #FDF6F0;
+  background-color: #111;
 }
 
 body {
@@ -31,7 +31,7 @@ body {
   min-height: 100dvh;
   margin: 0;
   padding: 0;
-  background-color: #FDF6F0;
+  background-color: #111;
   color: var(--color-espresso);
   font-family: var(--font-cormorant), "Georgia", serif;
   -webkit-font-smoothing: antialiased;
@@ -135,6 +135,7 @@ h1, h2, h3, h4, h5, h6 {
 .snap-container {
   height: 100dvh;
   height: 100vh;
+  overflow-x: hidden;
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: y proximity;

@@ -18,8 +18,8 @@ const COLOR_B = "var(--color-section-b)";
 
 export default function Home() {
   // Landing flow states: thumbnail -> video -> hero
-  const [showThumbnail, setShowThumbnail] = useState(true);
-  const [showVideo, setShowVideo] = useState(false);
+  const [thumbnailVisible, setThumbnailVisible] = useState(true);
+  const [videoVisible, setVideoVisible] = useState(false);
   const [videoFinished, setVideoFinished] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
 
@@ -27,15 +27,27 @@ export default function Home() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handleThumbnailTap = () => {
-    // Fade out thumbnail and start video
-    setShowThumbnail(false);
-    setShowVideo(true);
+    // Fade out thumbnail immediately
+    setThumbnailVisible(false);
+    // Show video and play it
+    setVideoVisible(true);
+    // Start background music
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.muted = false;
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.error("Music play failed:", err);
+        });
+      }
+    }
   };
 
   const handleVideoEnd = () => {
     // Fade out video and show hero section
     setVideoFinished(true);
-    setShowVideo(false);
+    setVideoVisible(false);
     // Re-enable scrolling after transition
     setTimeout(() => {
       document.body.style.overflow = "";
@@ -83,6 +95,8 @@ export default function Home() {
     }
   }, []);
 
+  const showLandingUI = thumbnailVisible || videoVisible;
+
   return (
     <>
       {/* Global Audio Element */}
@@ -94,59 +108,67 @@ export default function Home() {
         playsInline
       />
 
-      {/* Navigation - hide audio toggle during landing flow */}
-      <NavBar
-        isPlaying={!audioRef.current?.paused}
-        onToggleAudio={toggleMusic}
-        showAudioToggle={!showThumbnail && !showVideo}
-      />
-      <FloatingPetals />
+      {/* Navigation - hide during landing flow */}
+      {!showLandingUI && (
+        <NavBar
+          isPlaying={!audioRef.current?.paused}
+          onToggleAudio={toggleMusic}
+          showAudioToggle
+        />
+      )}
+      {!showLandingUI && <FloatingPetals />}
 
       {/* Main Scroll Container */}
       <div className="snap-container">
         {/* Thumbnail Section - full-screen static image, scroll locked */}
-        {showThumbnail && (
-          <section
-            id="hero"
-            className="snap-section fixed inset-0 h-screen md:h-screen"
-            style={{ backgroundColor: "#FDF6F0", zIndex: 20 }}
+        <section
+          id="hero"
+          className="fixed inset-0 h-screen md:h-screen"
+          style={{
+            backgroundColor: "#111",
+            zIndex: 50,
+            opacity: thumbnailVisible ? 1 : 0,
+            pointerEvents: thumbnailVisible ? "auto" : "none",
+            transition: "opacity 200ms ease-out",
+          }}
+        >
+          <div
+            className="absolute inset-0 bg-cover bg-center cursor-pointer"
+            style={{ backgroundImage: 'url("/videos/thumbnail.jpg")' }}
+            onClick={handleThumbnailTap}
+            onTouchEnd={handleThumbnailTap}
           >
-            <div
-              className="absolute inset-0 bg-cover bg-center cursor-pointer"
-              style={{ backgroundImage: 'url("/videos/thumbnail.jpg")' }}
-              onClick={handleThumbnailTap}
-              onTouchEnd={handleThumbnailTap}
-            >
-              {/* Bouncing "Tap to open" text */}
-              <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center pointer-events-none">
-                <div
-                  className="animate-bounce px-6 py-3 rounded-full border border-white/30 text-white text-base md:text-lg font-sans tracking-[0.25em] uppercase shadow-2xl"
-                  style={{ backgroundColor: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)" }}
-                >
-                  Tap to open
-                </div>
+            {/* Bouncing "Tap to open" text */}
+            <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center pointer-events-none">
+              <div
+                className="animate-bounce px-6 py-3 rounded-full border border-white/30 text-white text-base md:text-lg font-sans tracking-[0.25em] uppercase shadow-2xl"
+                style={{ backgroundColor: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)" }}
+              >
+                Tap to open
               </div>
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
-        {/* Video Section - plays after thumbnail tap */}
-        {showVideo && !videoFinished && (
-          <section
-            className={`snap-section relative h-screen md:h-screen transition-all duration-1000 ${
-              videoFinished ? "opacity-0 pointer-events-none" : "opacity-100"
-            }`}
-            style={{ backgroundColor: COLOR_A }}
-          >
+        {/* Video Section - always mounted, visibility controlled via opacity */}
+        <section
+          className="fixed inset-0 h-screen md:h-screen"
+          style={{
+            backgroundColor: "#111",
+            zIndex: 40,
+            opacity: videoVisible ? 1 : 0,
+            pointerEvents: videoVisible ? "auto" : "none",
+            transition: "opacity 500ms ease-out",
+          }}
+        >
             <HeroVideo
               audioRef={audioRef}
               isMuted={isMuted}
               onToggleMute={toggleMute}
               onVideoEnd={handleVideoEnd}
-              showMuteButton
+              shouldPlay={videoVisible}
             />
-          </section>
-        )}
+        </section>
 
         {/* Hero Section - fades in after video ends with subtle zoom-out */}
         <section

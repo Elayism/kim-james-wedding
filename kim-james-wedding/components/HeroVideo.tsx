@@ -7,10 +7,10 @@ interface HeroVideoProps {
   isMuted: boolean;
   onToggleMute: () => void;
   onVideoEnd: () => void;
-  showMuteButton?: boolean;
+  shouldPlay?: boolean;
 }
 
-export default function HeroVideo({ audioRef, isMuted, onToggleMute, onVideoEnd, showMuteButton = false }: HeroVideoProps) {
+export default function HeroVideo({ audioRef, isMuted, onToggleMute, onVideoEnd, shouldPlay = false }: HeroVideoProps) {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -74,6 +74,14 @@ export default function HeroVideo({ audioRef, isMuted, onToggleMute, onVideoEnd,
     };
   }, []);
 
+  useEffect(() => {
+    if (shouldPlay && videoRef.current) {
+      videoRef.current.play().catch((err) => {
+        console.error("Video play failed:", err);
+      });
+    }
+  }, [shouldPlay]);
+
   return (
     <div
       className="hero-video-container relative w-full h-full"
@@ -81,6 +89,7 @@ export default function HeroVideo({ audioRef, isMuted, onToggleMute, onVideoEnd,
       <video
         ref={videoRef}
         src="/videos/envelope-open.mp4"
+        poster="/videos/thumbnail.jpg"
         playsInline
         preload="auto"
         muted
@@ -89,49 +98,13 @@ export default function HeroVideo({ audioRef, isMuted, onToggleMute, onVideoEnd,
         onCanPlay={handleCanPlay}
         onLoadedData={handleLoadedData}
         onEnded={handleVideoEnded}
-        onClick={handleTap}
-        onTouchEnd={handleTap}
-        className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+        className="absolute inset-0 w-full h-full object-cover"
         style={{
           opacity: 1,
           display: "block",
           objectFit: "cover",
         }}
       />
-
-      {/* Bouncing "Tap to open" text - shown only before first interaction */}
-      {!hasInteracted && (
-        <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center pointer-events-none">
-          <div
-            className="animate-bounce px-6 py-3 rounded-full border border-white/30 text-white text-base md:text-lg font-sans tracking-[0.25em] uppercase shadow-2xl"
-            style={{ backgroundColor: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)" }}
-          >
-            Tap to open
-          </div>
-        </div>
-      )}
-
-      {/* Mute/Unmute button - shown after interaction when showMuteButton is true */}
-      {hasInteracted && showMuteButton && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleMute();
-          }}
-          className="absolute top-4 right-4 z-30 w-12 h-12 rounded-full border border-white/30 bg-black/40 backdrop-blur-md text-white flex items-center justify-center shadow-lg hover:bg-black/60 transition"
-          aria-label={isMuted ? "Unmute music" : "Mute music"}
-        >
-          {isMuted ? (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354L2.17 15.78A1.74 1.74 0 003.09 17.25h3.24c.88 0 1.704-.507 1.938-1.354l1.17-4.32z" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354L2.17 15.78A1.74 1.74 0 003.09 17.25h3.24c.88 0 1.704-.507 1.938-1.354l1.17-4.32z" />
-            </svg>
-          )}
-        </button>
-      )}
     </div>
   );
 }
