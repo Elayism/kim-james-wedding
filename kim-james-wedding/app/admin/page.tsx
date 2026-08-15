@@ -1,8 +1,20 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import Link from "next/link";
+import { SAMPLE_DATA } from "@/lib/sampleData";
+
+async function seedSampleData() {
+  try {
+    const res = await fetch("/api/rsvp/seed", { method: "POST" });
+    const json = await res.json();
+    return json.success;
+  } catch (err) {
+    console.error("Seed error:", err);
+    return false;
+  }
+}
 
 interface GuestItem {
   name: string;
@@ -22,163 +34,6 @@ interface RsvpRecord {
   is_deleted?: boolean;
   created_at?: string;
 }
-
-const SAMPLE_DATA: RsvpRecord[] = [
-  {
-    id: "1",
-    full_name: "Maria Santos",
-    email: "maria@example.com",
-    attending: "accepts",
-    guest_count: 3,
-    meal_preference: "Chicken",
-    dietary_restrictions: "Nut Allergy",
-    message: "So happy for both of you! See you there!",
-    guest_details: [
-      { name: "Maria Santos", meal: "Chicken" },
-      { name: "Juan Santos", meal: "Beef" },
-      { name: "Sofia Santos", meal: "Chicken" },
-    ],
-    is_deleted: false,
-    created_at: "2026-08-10T10:00:00Z",
-  },
-  {
-    id: "2",
-    full_name: "Carlos Reyes",
-    email: "carlos@example.com",
-    attending: "accepts",
-    guest_count: 2,
-    meal_preference: "Beef",
-    dietary_restrictions: "None",
-    message: "Congratulations Kim & James!",
-    guest_details: [
-      { name: "Carlos Reyes", meal: "Beef" },
-      { name: "Elena Reyes", meal: "Fish" },
-    ],
-    is_deleted: false,
-    created_at: "2026-08-11T14:30:00Z",
-  },
-  {
-    id: "3",
-    full_name: "Ana Cruz",
-    email: "ana@example.com",
-    attending: "declines",
-    guest_count: 1,
-    meal_preference: "Vegetarian",
-    dietary_restrictions: null,
-    message: "Wishing you both a lifetime of love and happiness!",
-    guest_details: [],
-    is_deleted: false,
-    created_at: "2026-08-12T09:15:00Z",
-  },
-  {
-    id: "4",
-    full_name: "David Kim",
-    email: "david@example.com",
-    attending: "accepts",
-    guest_count: 2,
-    meal_preference: "Pork",
-    dietary_restrictions: "Gluten-free",
-    message: "Excited to celebrate with you!",
-    guest_details: [
-      { name: "David Kim", meal: "Pork" },
-      { name: "Lisa Kim", meal: "Chicken" },
-    ],
-    is_deleted: false,
-    created_at: "2026-08-13T16:45:00Z",
-  },
-  {
-    id: "5",
-    full_name: "Sophie Turner",
-    email: "sophie@example.com",
-    attending: "accepts",
-    guest_count: 1,
-    meal_preference: "Other",
-    dietary_restrictions: "Vegan",
-    message: "So happy for you both!",
-    guest_details: [
-      { name: "Sophie Turner", meal: "Other" },
-    ],
-    is_deleted: false,
-    created_at: "2026-08-14T11:20:00Z",
-  },
-  {
-    id: "6",
-    full_name: "Michael Brown",
-    email: "michael@example.com",
-    attending: "declines",
-    guest_count: 1,
-    meal_preference: "Chicken",
-    dietary_restrictions: null,
-    message: "Sorry we can't make it.",
-    guest_details: [],
-    is_deleted: false,
-    created_at: "2026-08-15T08:00:00Z",
-  },
-  {
-    id: "7",
-    full_name: "Jessica Lee",
-    email: "jessica@example.com",
-    attending: "accepts",
-    guest_count: 4,
-    meal_preference: "Chicken",
-    dietary_restrictions: "Shellfish allergy",
-    message: "Can't wait to celebrate!",
-    guest_details: [
-      { name: "Jessica Lee", meal: "Chicken" },
-      { name: "Tom Lee", meal: "Beef" },
-      { name: "Amy Lee", meal: "Fish" },
-      { name: "Jerry Lee", meal: "Chicken" },
-    ],
-    is_deleted: false,
-    created_at: "2026-08-16T13:10:00Z",
-  },
-  {
-    id: "8",
-    full_name: "Ryan Garcia",
-    email: "ryan@example.com",
-    attending: "accepts",
-    guest_count: 2,
-    meal_preference: "Vegetarian",
-    dietary_restrictions: null,
-    message: "Congratulations!",
-    guest_details: [
-      { name: "Ryan Garcia", meal: "Vegetarian" },
-      { name: "Mia Garcia", meal: "Vegetarian" },
-    ],
-    is_deleted: false,
-    created_at: "2026-08-17T10:45:00Z",
-  },
-  {
-    id: "9",
-    full_name: "Emily Watson",
-    email: "emily@example.com",
-    attending: "declines",
-    guest_count: 1,
-    meal_preference: "Fish",
-    dietary_restrictions: null,
-    message: "Sad to miss it!",
-    guest_details: [],
-    is_deleted: false,
-    created_at: "2026-08-18T15:30:00Z",
-  },
-  {
-    id: "10",
-    full_name: "Daniel Martinez",
-    email: "daniel@example.com",
-    attending: "accepts",
-    guest_count: 3,
-    meal_preference: "Beef",
-    dietary_restrictions: "Dairy allergy",
-    message: "Looking forward to it!",
-    guest_details: [
-      { name: "Daniel Martinez", meal: "Beef" },
-      { name: "Anna Martinez", meal: "Chicken" },
-      { name: "Lucas Martinez", meal: "Beef" },
-    ],
-    is_deleted: false,
-    created_at: "2026-08-19T09:00:00Z",
-  },
-];
 
 const PIE_COLORS: Record<string, string> = {
   Chicken: "#B8A88A",
@@ -273,8 +128,8 @@ export default function AdminDashboard() {
   const [passwordInput, setPasswordInput] = useState("");
   const [error, setError] = useState("");
   const [search, setSearch] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "info" } | null>(null);
+  const [seeded, setSeeded] = useState(false);
   const { mutate } = useSWRConfig();
 
   const [modal, setModal] = useState<{
@@ -300,7 +155,7 @@ export default function AdminDashboard() {
     message: "",
   });
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordInput === "wedding2027") {
       setIsAuthenticated(true);
@@ -310,6 +165,32 @@ export default function AdminDashboard() {
       setPasswordInput("");
     }
   };
+
+  // Seed sample data into Supabase once after authentication
+  useEffect(() => {
+    if (!isAuthenticated || seeded) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/rsvp?type=active");
+        const json = await res.json();
+        const existing = (json && (json.data || json)) as RsvpRecord[] | undefined;
+        if (!cancelled && (!existing || existing.length === 0)) {
+          await seedSampleData();
+        }
+        if (!cancelled) {
+          setSeeded(true);
+          mutate("/api/rsvp?type=active");
+          mutate("/api/rsvp?type=deleted");
+        }
+      } catch (err) {
+        console.error("Seed check error:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, seeded, mutate]);
 
   // Fetch data from Supabase via API routes
   const { data: activeData, isLoading: activeLoading, error: activeError } = useSWR<RsvpRecord[]>(
@@ -322,19 +203,8 @@ export default function AdminDashboard() {
     }
   );
 
-  const { data: deletedData, isLoading: deletedLoading, error: deletedError } = useSWR<RsvpRecord[]>(
-    isAuthenticated ? "/api/rsvp?type=deleted" : null,
-    fetcher,
-    {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      refreshInterval: 0,
-    }
-  );
-
   const activeRecords = activeData || [];
-  const deletedRecords = deletedData || [];
-  const loading = activeLoading || deletedLoading;
+  const loading = activeLoading;
 
   const showToast = (message: string, type: "success" | "info" = "success") => {
     setNotification({ message, type });
@@ -351,89 +221,12 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id: string | number, name: string) => {
     openModal(
-      "Move to Deleted History?",
-      `Are you sure you want to move RSVP for "${name}" to Deleted History?`,
-      async () => {
-        closeModal();
-        const record = activeRecords.find((r) => r.id === id);
-        if (!record) return;
-
-        const updatedActive = activeRecords.filter((r) => r.id !== id);
-        const updatedDeleted = [record, ...deletedRecords];
-
-        mutate("/api/rsvp?type=active", updatedActive, false);
-        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
-        showToast(`Moved "${name}" to Deleted History`, "info");
-
-        try {
-          const res = await fetch(`/api/rsvp?id=${id}`, { method: "DELETE" });
-          const json = await res.json();
-          if (!res.ok || !json.success) {
-            showToast(json.message || "Failed to delete record", "info");
-            mutate("/api/rsvp?type=active");
-            mutate("/api/rsvp?type=deleted");
-          }
-        } catch (err) {
-          console.error("Delete error:", err);
-          showToast("Network error while deleting", "info");
-          mutate("/api/rsvp?type=active");
-          mutate("/api/rsvp?type=deleted");
-        }
-      },
-      "danger"
-    );
-  };
-
-  const handleRestore = async (id: string | number, name: string) => {
-    openModal(
-      "Restore RSVP?",
-      `Are you sure you want to restore "${name}" back to Active RSVPs?`,
-      async () => {
-        closeModal();
-        const record = deletedRecords.find((r) => r.id === id);
-        if (!record) return;
-
-        const updatedDeleted = deletedRecords.filter((r) => r.id !== id);
-        const updatedActive = [record, ...activeRecords];
-
-        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
-        mutate("/api/rsvp?type=active", updatedActive, false);
-        showToast(`Restored "${name}" back to Active RSVPs`, "success");
-
-        try {
-          const res = await fetch("/api/rsvp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "restore", id }),
-          });
-          const json = await res.json();
-          if (!res.ok || !json.success) {
-            showToast(json.message || "Failed to restore record", "info");
-            mutate("/api/rsvp?type=active");
-            mutate("/api/rsvp?type=deleted");
-          }
-        } catch (err) {
-          console.error("Restore error:", err);
-          showToast("Network error while restoring", "info");
-          mutate("/api/rsvp?type=active");
-          mutate("/api/rsvp?type=deleted");
-        }
-      },
-      "info"
-    );
-  };
-
-  const handlePermanentDelete = async (id: string | number, name: string) => {
-    openModal(
       "Permanently Delete?",
       `Are you sure you want to PERMANENTLY delete the RSVP for "${name}"? This action cannot be undone.`,
       async () => {
         closeModal();
-        const record = deletedRecords.find((r) => r.id === id);
-        if (!record) return;
-
-        const updatedDeleted = deletedRecords.filter((r) => r.id !== id);
-        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
+        const updatedActive = activeRecords.filter((r) => r.id !== id);
+        mutate("/api/rsvp?type=active", updatedActive, false);
         showToast(`Permanently deleted "${name}"`, "info");
 
         try {
@@ -441,12 +234,12 @@ export default function AdminDashboard() {
           const json = await res.json();
           if (!res.ok || !json.success) {
             showToast(json.message || "Failed to permanently delete record", "info");
-            mutate("/api/rsvp?type=deleted");
+            mutate("/api/rsvp?type=active");
           }
         } catch (err) {
           console.error("Permanent Delete error:", err);
           showToast("Network error while deleting", "info");
-          mutate("/api/rsvp?type=deleted");
+          mutate("/api/rsvp?type=active");
         }
       },
       "danger"
@@ -488,7 +281,6 @@ export default function AdminDashboard() {
 
     // Optimistic update
     mutate("/api/rsvp?type=active", activeRecords.map((r) => r.id === editModal.record!.id ? updatedRecord : r), false);
-    mutate("/api/rsvp?type=deleted", deletedRecords.map((r) => r.id === editModal.record!.id ? updatedRecord : r), false);
     showToast(`Updated RSVP for "${editForm.full_name}"`, "success");
     closeEditModal();
 
@@ -502,13 +294,11 @@ export default function AdminDashboard() {
       if (!res.ok || !json.success) {
         showToast(json.message || "Failed to update record", "info");
         mutate("/api/rsvp?type=active");
-        mutate("/api/rsvp?type=deleted");
       }
     } catch (err) {
       console.error("Update error:", err);
       showToast("Network error while updating", "info");
       mutate("/api/rsvp?type=active");
-      mutate("/api/rsvp?type=deleted");
     }
   };
 
@@ -595,9 +385,8 @@ export default function AdminDashboard() {
     });
   }, [stats.mealCounts]);
 
-  const currentList = activeTab === "active" ? activeRecords : deletedRecords;
   const filteredRecords = useMemo(() => {
-    return currentList.filter((r) => {
+    return activeRecords.filter((r) => {
       if (search.trim() !== "") {
         const q = search.toLowerCase();
         const mainMatch =
@@ -612,7 +401,7 @@ export default function AdminDashboard() {
       }
       return true;
     });
-  }, [currentList, search]);
+  }, [activeRecords, search]);
 
   const exportCSV = () => {
     const headers = [
@@ -711,10 +500,10 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {(activeError || deletedError) && (
+          {activeError && (
             <div className="mx-4 md:mx-8 mt-4 p-4 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 font-sans">
               <strong>Connection Notice:</strong> Unable to reach the database. Showing cached data if available.
-              <button onClick={() => { mutate("/api/rsvp?type=active"); mutate("/api/rsvp?type=deleted"); }} className="ml-3 underline font-semibold">Retry</button>
+              <button onClick={() => { mutate("/api/rsvp?type=active"); }} className="ml-3 underline font-semibold">Retry</button>
             </div>
           )}
 
@@ -888,7 +677,7 @@ export default function AdminDashboard() {
                     Guest RSVP Analytics & Management
                   </h1>
                   <p className="text-[10px] md:text-xs text-[var(--color-soft-taupe)] font-sans mt-0.5">
-                    Live Overview, Food Preferences, Duplicate Prevention & Deleted History
+                    Live Overview, Food Preferences & Management
                   </p>
                 </div>
 
@@ -896,11 +685,10 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => {
                       mutate("/api/rsvp?type=active");
-                      mutate("/api/rsvp?type=deleted");
                     }}
                     className="inline-flex items-center gap-1.5 px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] transition whitespace-nowrap"
                   >
-                    <span role="img" aria-label="refresh">🔄</span>
+                    <IconRefresh />
                     Refresh
                   </button>
                   <button
@@ -949,12 +737,12 @@ export default function AdminDashboard() {
 
               <div className="p-3 md:p-5 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm">
                 <p className="text-[10px] md:text-xs uppercase tracking-wider text-[var(--color-soft-taupe)] font-semibold">
-                  Deleted History
+                  Total Guests
                 </p>
-                <p className="text-xl md:text-3xl font-serif font-bold text-amber-700 mt-1 md:mt-2">
-                  {deletedRecords.length}
+                <p className="text-xl md:text-3xl font-serif font-bold text-[var(--color-gold-brown)] mt-1 md:mt-2">
+                  {stats.totalAttendingGuests + stats.totalDeclined}
                 </p>
-                <p className="text-[10px] md:text-[11px] text-amber-800 mt-1 font-medium">Available to restore</p>
+                <p className="text-[10px] md:text-[11px] text-[var(--color-espresso)] mt-1">All responses</p>
               </div>
             </div>
 
@@ -1066,34 +854,15 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Detailed Guest Directory Table & Deleted Recycle Bin */}
+            {/* Detailed Guest Directory Table */}
             <div className="p-3 md:p-6 rounded-xl border border-[var(--color-champagne)] bg-[var(--color-antique-white)] shadow-sm space-y-3 md:space-y-4">
               <div className="flex flex-col gap-3 pb-3 border-b border-[var(--color-champagne)]">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      onClick={() => setActiveTab("active")}
-                      className={`inline-flex items-center gap-1.5 px-3 py-2 text-[11px] md:text-xs font-bold uppercase tracking-wider rounded-lg transition whitespace-nowrap ${
-                        activeTab === "active"
-                          ? "bg-[var(--color-gold-brown)] text-white shadow"
-                          : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
-                      }`}
-                    >
+                    <span className="inline-flex items-center gap-1.5 px-3 py-2 text-[11px] md:text-xs font-bold uppercase tracking-wider rounded-lg bg-[var(--color-gold-brown)] text-white shadow">
                       <IconClipboard />
                       Active RSVPs ({activeRecords.length})
-                    </button>
-
-                    <button
-                      onClick={() => setActiveTab("deleted")}
-                      className={`inline-flex items-center gap-1.5 px-3 py-2 text-[11px] md:text-xs font-bold uppercase tracking-wider rounded-lg transition whitespace-nowrap ${
-                        activeTab === "deleted"
-                          ? "bg-[var(--color-espresso)] text-white shadow"
-                          : "bg-[var(--color-ivory)] text-[var(--color-espresso)] border border-[var(--color-champagne)]"
-                      }`}
-                    >
-                      <IconTrash />
-                      Deleted History ({deletedRecords.length})
-                    </button>
+                    </span>
                   </div>
 
                   <input
@@ -1112,9 +881,7 @@ export default function AdminDashboard() {
                 </div>
               ) : filteredRecords.length === 0 ? (
                 <div className="py-8 md:py-10 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
-                  {activeTab === "active"
-                    ? "No active guest records found."
-                    : "No deleted records in history."}
+                  No active guest records found.
                 </div>
               ) : (
                 <div className="overflow-x-auto -mx-3 md:mx-0">
@@ -1200,47 +967,26 @@ export default function AdminDashboard() {
                             <td className="py-3 px-2 md:px-3 text-xs font-sans text-[var(--color-soft-taupe)] whitespace-nowrap">
                               {r.created_at ? new Date(r.created_at).toLocaleString() : "N/A"}
                             </td>
-                            <td className="py-3 px-2 md:px-3 text-right">
-                              {activeTab === "active" ? (
-                                <div className="flex flex-col gap-1.5 items-end">
-                                  <button
-                                    onClick={() => openEditModal(r)}
-                                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
-                                    title="Edit RSVP"
-                                  >
-                                    <IconEdit />
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(r.id, r.full_name)}
-                                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
-                                    title="Move to Deleted History"
-                                  >
-                                    <IconTrash />
-                                    Delete
-                                  </button>
-                                </div>
-                              ) : (
-                                <div className="flex flex-col gap-1.5 items-end">
-                                  <button
-                                    onClick={() => handleRestore(r.id, r.full_name)}
-                                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
-                                    title="Restore back to active RSVPs"
-                                  >
-                                    <IconRestore />
-                                    Restore
-                                  </button>
-                                  <button
-                                    onClick={() => handlePermanentDelete(r.id, r.full_name)}
-                                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
-                                    title="Permanently Delete"
-                                  >
-                                    <IconX />
-                                    Delete
-                                  </button>
-                                </div>
-                              )}
-                            </td>
+                             <td className="py-3 px-2 md:px-3 text-right">
+                               <div className="flex flex-col gap-1.5 items-end">
+                                 <button
+                                   onClick={() => openEditModal(r)}
+                                   className="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
+                                   title="Edit RSVP"
+                                 >
+                                   <IconEdit />
+                                   Edit
+                                 </button>
+                                 <button
+                                   onClick={() => handleDelete(r.id, r.full_name)}
+                                   className="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold text-[10px] md:text-[11px] transition whitespace-nowrap"
+                                   title="Permanently Delete"
+                                 >
+                                   <IconTrash />
+                                   Delete
+                                 </button>
+                               </div>
+                             </td>
                           </tr>
                         ))}
                       </tbody>

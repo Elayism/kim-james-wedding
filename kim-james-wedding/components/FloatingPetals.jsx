@@ -6,7 +6,6 @@ export default function FloatingPetals() {
   const [petals, setPetals] = useState([]);
 
   useEffect(() => {
-    // Generate 15 floating petals with varying positions and delays for the whole site
     const generatedPetals = Array.from({ length: 15 }).map((_, i) => ({
       id: i,
       left: `${(i * 6.5) + 2}%`,
@@ -16,6 +15,10 @@ export default function FloatingPetals() {
     }));
     setPetals(generatedPetals);
   }, []);
+
+  const removePetal = (id) => {
+    setPetals((prev) => prev.filter((p) => p.id !== id));
+  };
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-40">
@@ -32,6 +35,7 @@ export default function FloatingPetals() {
             animationDelay: petal.delay,
             transform: "rotate(45deg)",
           }}
+          onAnimationEnd={() => removePetal(petal.id)}
         />
       ))}
     </div>

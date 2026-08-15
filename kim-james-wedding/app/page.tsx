@@ -129,7 +129,6 @@ export default function Home() {
             zIndex: 50,
             opacity: thumbnailVisible ? 1 : 0,
             pointerEvents: thumbnailVisible ? "auto" : "none",
-            transition: "opacity 200ms ease-out",
           }}
         >
           <div
@@ -172,6 +171,7 @@ export default function Home() {
 
         {/* Hero Section - fades in after video ends with subtle zoom-out */}
         <section
+          key={videoFinished ? "hero-visible" : "hero-hidden"}
           className={`snap-section relative h-screen md:h-screen transition-all duration-1000 ${
             videoFinished ? "opacity-100 scale-100" : "opacity-0 scale-105"
           }`}
