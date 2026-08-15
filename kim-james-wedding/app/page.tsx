@@ -17,30 +17,42 @@ const COLOR_A = "var(--color-section-a)";
 const COLOR_B = "var(--color-section-b)";
 
 export default function Home() {
-  const [videoReady, setVideoReady] = useState(false);
+  // Landing flow states: thumbnail -> video -> hero
+  const [showThumbnail, setShowThumbnail] = useState(true);
+  const [showVideo, setShowVideo] = useState(false);
   const [videoFinished, setVideoFinished] = useState(false);
-  const [videoRemoved, setVideoRemoved] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+
+  // Single global audio instance for the whole site
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const handleVideoReady = () => {
-    setVideoReady(true);
+  const handleThumbnailTap = () => {
+    // Fade out thumbnail and start video
+    setShowThumbnail(false);
+    setShowVideo(true);
   };
 
   const handleVideoEnd = () => {
-    // Smooth transition: fade out video section and fade in hero
+    // Fade out video and show hero section
     setVideoFinished(true);
-    // After fade-out transition completes, remove video section so hero becomes first scrollable section
+    setShowVideo(false);
+    // Re-enable scrolling after transition
     setTimeout(() => {
-      setVideoRemoved(true);
+      document.body.style.overflow = "";
     }, 1000);
-    // Re-enable page scrolling after video finishes
-    document.body.style.overflow = "";
+  };
+
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    audioRef.current.muted = !audioRef.current.muted;
+    setIsMuted(audioRef.current.muted);
   };
 
   const toggleMusic = () => {
     if (!audioRef.current) return;
     if (audioRef.current.paused) {
       audioRef.current.muted = false;
+      setIsMuted(false);
       audioRef.current.volume = 1.0;
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
@@ -53,7 +65,7 @@ export default function Home() {
     }
   };
 
-  // Lock scroll immediately while video is the landing view
+  // Lock scroll while thumbnail/video is the landing view
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -61,20 +73,14 @@ export default function Home() {
     };
   }, []);
 
+  // Initialize audio element once
   useEffect(() => {
-    const audioEl = audioRef.current;
-    if (!audioEl) return;
-
-    const handlePlay = () => {};
-    const handlePause = () => {};
-
-    audioEl.addEventListener("play", handlePlay);
-    audioEl.addEventListener("pause", handlePause);
-
-    return () => {
-      audioEl.removeEventListener("play", handlePlay);
-      audioEl.removeEventListener("pause", handlePause);
-    };
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/audio/cant-help-falling.mp3");
+      audioRef.current.loop = true;
+      audioRef.current.volume = 0.5;
+      audioRef.current.preload = "auto";
+    }
   }, []);
 
   return (
@@ -92,23 +98,48 @@ export default function Home() {
       <NavBar isPlaying={!audioRef.current?.paused} onToggleAudio={toggleMusic} />
       <FloatingPetals />
 
-      {/* Main Scroll Container - starts immediately with video */}
+      {/* Main Scroll Container */}
       <div className="snap-container">
-        {/* Video Section - full viewport, scroll locked until video ends */}
-        {!videoRemoved && (
+        {/* Thumbnail Section - full-screen static image, scroll locked */}
+        {showThumbnail && (
           <section
             id="hero"
+            className="snap-section relative h-screen md:h-screen"
+            style={{ backgroundColor: COLOR_A }}
+          >
+            <div
+              className="absolute inset-0 bg-cover bg-center cursor-pointer"
+              style={{ backgroundImage: 'url("/videos/thumbnail.jpg")' }}
+              onClick={handleThumbnailTap}
+              onTouchEnd={handleThumbnailTap}
+            >
+              {/* Bouncing "Tap to open" text */}
+              <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center pointer-events-none">
+                <div
+                  className="animate-bounce px-6 py-3 rounded-full border border-white/30 text-white text-base md:text-lg font-sans tracking-[0.25em] uppercase shadow-2xl"
+                  style={{ backgroundColor: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)" }}
+                >
+                  Tap to open
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Video Section - plays after thumbnail tap */}
+        {showVideo && !videoFinished && (
+          <section
             className={`snap-section relative h-screen md:h-screen transition-all duration-1000 ${
               videoFinished ? "opacity-0 pointer-events-none" : "opacity-100"
             }`}
             style={{ backgroundColor: COLOR_A }}
           >
-            <div className="absolute inset-0">
-              <HeroVideo
-                onVideoReady={handleVideoReady}
-                onVideoEnd={handleVideoEnd}
-              />
-            </div>
+            <HeroVideo
+              audioRef={audioRef}
+              isMuted={isMuted}
+              onToggleMute={toggleMute}
+              onVideoEnd={handleVideoEnd}
+            />
           </section>
         )}
 

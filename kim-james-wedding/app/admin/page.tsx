@@ -998,10 +998,11 @@ export default function AdminDashboard() {
                     <table className="w-full text-left text-[10px] md:text-xs font-sans border-collapse">
                       <thead>
                         <tr className="border-b border-[var(--color-champagne)] text-[var(--color-gold-brown)] uppercase tracking-wider font-semibold">
-                      <th className="py-3 px-2 md:px-3 text-left">Primary Contact</th>
-                      <th className="py-3 px-2 md:px-3 text-center">Status</th>
+                      <th className="py-3 px-2 md:px-3 text-left">Name</th>
+                      <th className="py-3 px-2 md:px-3 text-center">Response</th>
+                      <th className="py-3 px-2 md:px-3 text-left">Meal Preference</th>
                       <th className="py-3 px-2 md:px-3 text-left">Message / Notes</th>
-                      <th className="py-3 px-2 md:px-3 text-left">Submitted</th>
+                      <th className="py-3 px-2 md:px-3 text-left">Created At</th>
                       <th className="py-3 px-2 md:px-3 text-right">Actions</th>
                         </tr>
                       </thead>
@@ -1057,6 +1058,17 @@ export default function AdminDashboard() {
                                 </div>
                               ) : (
                                 <span className="text-[var(--color-soft-taupe)] italic text-[10px] md:text-xs">
+                                  —
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-2 md:px-3">
+                              {r.attending === "accepts" ? (
+                                <span className="text-[10px] md:text-xs text-[var(--color-espresso)] italic line-clamp-2">
+                                  {r.message || "—"}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] md:text-xs text-[var(--color-espresso)] italic">
                                   {r.message || "No message"}
                                 </span>
                               )}
