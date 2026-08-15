@@ -79,7 +79,7 @@ export async function POST(request: Request) {
     }
 
     const allRecords = await fetchAllRecords();
-    const duplicateName = checkDuplicateName(allRecords, namesToCheck);
+    const duplicateName = await checkDuplicateName(namesToCheck);
 
     if (duplicateName) {
       return NextResponse.json(
@@ -168,10 +168,12 @@ export async function GET(request: Request) {
   }
 
   // Fallback
-  const records = getInMemoryRSVPs(type === "all" || type === "deleted");
+  const records = await getInMemoryRSVPs(type === "all" || type === "deleted");
   const filtered =
     type === "deleted"
       ? records.filter((r) => r.is_deleted)
+      : type === "all"
+      ? records
       : records.filter((r) => !r.is_deleted);
 
   return NextResponse.json({ success: true, data: filtered }, {

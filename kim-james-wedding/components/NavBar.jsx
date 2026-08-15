@@ -75,17 +75,21 @@ export default function NavBar({ isPlaying, onToggleAudio }) {
           }}
         >
           <div className={isPlaying ? "animate-spin-slow" : ""}>
-            {isPlaying ? (
-              <span className="text-lg leading-none">♫</span>
-            ) : (
-              <div className="relative">
-                <span className="text-lg leading-none opacity-50">♫</span>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-5 h-0.5 bg-[var(--color-gold-brown)] rotate-45 transform origin-center" />
+              {isPlaying ? (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L4.5 3.75M9 15V19.5M9 15H4.5M9 15L4.5 20.25M15 9V4.5M15 9h4.5M15 9l4.5-5.25M15 15V19.5M15 15h4.5M15 15l4.5 5.25" />
+                </svg>
+              ) : (
+                <div className="relative">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 opacity-50">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L4.5 3.75M9 15V19.5M9 15H4.5M9 15L4.5 20.25M15 9V4.5M15 9h4.5M15 9l4.5-5.25M15 15V19.5M15 15h4.5M15 15l4.5 5.25" />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-5 h-0.5 bg-[var(--color-gold-brown)] rotate-45 transform origin-center" />
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
         </button>
       </motion.div>
 

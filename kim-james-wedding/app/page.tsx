@@ -108,44 +108,44 @@ export default function Home() {
           {/* All sections in snap scroll container */}
           <div className="snap-container h-dvh">
             {/* Hero Section */}
-            <section id="hero" className="snap-section min-h-screen md:h-screen">
+            <section id="hero" className="snap-section min-h-screen py-6 md:py-0 bg-black">
               <Hero />
             </section>
 
             {/* Our Story Section */}
-            <section id="our-story" className="snap-section min-h-screen md:h-screen flex flex-col items-center justify-center px-4">
+            <section id="our-story" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-antique-white)]">
               <OurStory />
             </section>
 
             {/* Event Details Section */}
-            <section id="event-details" className="snap-section min-h-screen md:h-screen flex flex-col items-center justify-center px-4">
+            <section id="event-details" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-ivory)]">
               <EventDetails />
             </section>
 
             {/* Dress Code Section */}
-            <section id="dress-code" className="snap-section min-h-screen md:h-screen flex flex-col items-center justify-center px-4">
+            <section id="dress-code" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-ecru)]">
               <DressCode />
             </section>
 
             {/* RSVP Section */}
-            <section id="rsvp" className="snap-section min-h-screen md:h-screen flex flex-col items-center justify-center px-4" style={{ backgroundColor: "var(--color-ivory)" }}>
+            <section id="rsvp" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-antique-white)]">
               <FadeInSection>
                 <RSVPForm />
               </FadeInSection>
             </section>
 
             {/* Gift Registry Section */}
-            <section id="gift-registry" className="snap-section min-h-screen md:h-screen flex flex-col items-center justify-center px-4">
+            <section id="gift-registry" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-ivory)]">
               <GiftRegistry />
             </section>
 
             {/* Gallery Section */}
-            <section id="gallery" className="snap-section min-h-screen md:h-screen flex flex-col items-center justify-center px-4">
+            <section id="gallery" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-ecru)]">
               <Gallery />
             </section>
 
             {/* Footer Section */}
-            <section id="footer" className="snap-section min-h-screen md:h-screen flex flex-col items-center justify-center px-4">
+            <section id="footer" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-antique-white)]">
               <Footer />
             </section>
           </div>

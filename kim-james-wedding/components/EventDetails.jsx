@@ -121,7 +121,10 @@ export default function EventDetails() {
               {/* Glowing Venue Marker Pin */}
               <div className="relative z-10 flex flex-col items-center transform group-hover:scale-110 transition-transform duration-300">
                 <div className="w-10 h-10 rounded-full bg-[var(--color-gold-brown)] text-[var(--color-ivory)] flex items-center justify-center shadow-lg border-2 border-white animate-bounce">
-                  📍
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-[var(--color-gold-brown)]">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                  </svg>
                 </div>
                 <div className="mt-1 px-3 py-1 bg-white/90 backdrop-blur border border-[var(--color-champagne)] rounded-full shadow text-[10px] font-sans font-bold uppercase tracking-wider text-[var(--color-espresso)]">
                   Vista Villa DSB

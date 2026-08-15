@@ -153,9 +153,17 @@ export default async function DashboardPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center text-base">
                         {rsvp.attending === "accepts" ? (
-                          <span title="Joyfully Accepts">✅</span>
+                          <span title="Joyfully Accepts" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                            </svg>
+                          </span>
                         ) : (
-                          <span title="Regretfully Declines">❌</span>
+                          <span title="Regretfully Declines" className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 text-rose-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </span>
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-center font-sans font-semibold">

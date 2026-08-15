@@ -108,13 +108,20 @@ INTERNATIONAL EMAILS
                   onClick={() => copyToClipboard(details.maribank.accountNumber, "MariBank Account #")}
                   className="px-3 py-1.5 rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] font-semibold transition text-[11px] flex items-center gap-1"
                 >
-                  📋 Copy No.
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.66-2.166 1.638m9.332 0c.065.616.216 1.206.444 1.764M15.666 3.888A2.25 2.25 0 0118 6.75v9a2.25 2.25 0 01-2.25 2.25h-9A2.25 2.25 0 014.5 15.75v-9A2.25 2.25 0 016.75 3.5h9m0 0a2.25 2.25 0 012.25 2.25" />
+                  </svg>
+                  Copy No.
                 </button>
                 <button
                   onClick={() => setActiveQrModal("maribank")}
                   className="px-3 py-1.5 rounded-full bg-[var(--color-ecru)] text-[var(--color-gold-brown)] hover:bg-[var(--color-warm-sand)] font-semibold transition text-[11px] flex items-center gap-1"
                 >
-                  📱 QR Code
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0113.5 9.375v-4.5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" />
+                  </svg>
+                  QR Code
                 </button>
               </div>
             </div>
@@ -135,13 +142,20 @@ INTERNATIONAL EMAILS
                   onClick={() => copyToClipboard(details.gcash.number, "GCash Number")}
                   className="px-3 py-1.5 rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] font-semibold transition text-[11px] flex items-center gap-1"
                 >
-                  📋 Copy No.
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.66-2.166 1.638m9.332 0c.065.616.216 1.206.444 1.764M15.666 3.888A2.25 2.25 0 0118 6.75v9a2.25 2.25 0 01-2.25 2.25h-9A2.25 2.25 0 014.5 15.75v-9A2.25 2.25 0 016.75 3.5h9m0 0a2.25 2.25 0 012.25 2.25" />
+                  </svg>
+                  Copy No.
                 </button>
                 <button
                   onClick={() => setActiveQrModal("gcash")}
                   className="px-3 py-1.5 rounded-full bg-[var(--color-ecru)] text-[var(--color-gold-brown)] hover:bg-[var(--color-warm-sand)] font-semibold transition text-[11px] flex items-center gap-1"
                 >
-                  📱 QR Code
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 013.75 9.375v-4.5zM3.75 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5zM13.5 4.875c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5A1.875 1.875 0 0113.5 9.375v-4.5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 14.625c0-1.036.84-1.875 1.875-1.875h4.5c1.036 0 1.875.84 1.875 1.875v4.5c0 1.036-.84 1.875-1.875 1.875h-4.5a1.875 1.875 0 01-1.875-1.875v-4.5z" />
+                  </svg>
+                  QR Code
                 </button>
               </div>
             </div>
@@ -166,13 +180,19 @@ INTERNATIONAL EMAILS
                       onClick={() => copyToClipboard(item.email, item.label)}
                       className="px-3 py-1 rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] font-semibold transition text-[10px]"
                     >
-                      📋 Copy
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.66-2.166 1.638m9.332 0c.065.616.216 1.206.444 1.764M15.666 3.888A2.25 2.25 0 0118 6.75v9a2.25 2.25 0 01-2.25 2.25h-9A2.25 2.25 0 014.5 15.75v-9A2.25 2.25 0 016.75 3.5h9m0 0a2.25 2.25 0 012.25 2.25" />
+                      </svg>
+                      Copy
                     </button>
                     <a
                       href={`mailto:${item.email}`}
                       className="px-3 py-1 rounded-full bg-[var(--color-ecru)] text-[var(--color-gold-brown)] hover:bg-[var(--color-warm-sand)] font-semibold transition text-[10px]"
                     >
-                      ✉️ Send Email
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                      </svg>
+                      Send Email
                     </a>
                   </div>
                 </div>
@@ -182,13 +202,16 @@ INTERNATIONAL EMAILS
 
           {/* Master Copy All Button */}
           <div className="mt-8 flex flex-col items-center justify-center">
-            <button
-              onClick={copyAllDetails}
-              className="relative inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs font-sans font-semibold uppercase tracking-wider text-[var(--color-ivory)] shadow transition-all duration-300 hover:scale-105 active:scale-95"
-              style={{ backgroundColor: "var(--color-gold-brown)" }}
-            >
-              <span>✨ Copy All Gift Details</span>
-            </button>
+              <button
+                onClick={copyAllDetails}
+                className="relative inline-flex items-center gap-2 px-8 py-3 rounded-full text-xs font-sans font-semibold uppercase tracking-wider text-[var(--color-ivory)] shadow transition-all duration-300 hover:scale-105 active:scale-95"
+                style={{ backgroundColor: "var(--color-gold-brown)" }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.002 4.002 0 00-3.09-3.09L2.25 12l2.846-.813a4.002 4.002 0 003.09-3.09L9 5.25l.813 2.846a4.002 4.002 0 003.09 3.09L15.75 12l-2.846.813a4.002 4.002 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423L16.5 15l.394 1.183a2.25 2.25 0 001.423 1.423L19.5 18.75l-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                </svg>
+                Copy All Gift Details
+              </button>
           </div>
         </motion.div>
       </FadeInSection>
@@ -210,12 +233,14 @@ INTERNATIONAL EMAILS
               onClick={(e) => e.stopPropagation()}
               className="bg-[var(--color-ivory)] p-6 rounded-2xl border border-[var(--color-champagne)] max-w-sm w-full text-center shadow-2xl relative font-sans"
             >
-              <button
-                onClick={() => setActiveQrModal(null)}
-                className="absolute top-3 right-3 text-[var(--color-espresso)] hover:text-[var(--color-gold-brown)] font-bold text-lg p-1"
-              >
-                ✕
-              </button>
+                <button
+                  onClick={() => setActiveQrModal(null)}
+                  className="absolute top-3 right-3 text-[var(--color-espresso)] hover:text-[var(--color-gold-brown)] font-bold text-lg p-1"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
 
               <h3 className="text-xl font-serif text-[var(--color-gold-brown)] font-bold mb-1 uppercase tracking-wider">
                 {activeQrModal === "maribank" ? "MariBank QR Code" : "GCash QR Code"}
@@ -259,7 +284,10 @@ INTERNATIONAL EMAILS
                   }}
                   className="w-full py-2 rounded-full bg-[var(--color-gold-brown)] text-[var(--color-ivory)] font-semibold text-xs shadow hover:opacity-90 transition"
                 >
-                  📋 Copy {activeQrModal === "maribank" ? "Account No." : "GCash No."}
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.66-2.166 1.638m9.332 0c.065.616.216 1.206.444 1.764M15.666 3.888A2.25 2.25 0 0118 6.75v9a2.25 2.25 0 01-2.25 2.25h-9A2.25 2.25 0 014.5 15.75v-9A2.25 2.25 0 016.75 3.5h9m0 0a2.25 2.25 0 012.25 2.25" />
+                  </svg>
+                  Copy {activeQrModal === "maribank" ? "Account No." : "GCash No."}
                 </button>
               </div>
             </motion.div>
