@@ -61,7 +61,9 @@ export default function HeroVideo({ onVideoReady, onVideoEnd }: HeroVideoProps) 
   }, []);
 
   return (
-    <div className="relative w-full h-full">
+    <div
+      className="hero-video-container relative w-full h-full"
+    >
       <video
         ref={videoRef}
         src="/envelope-open.mp4"
@@ -76,7 +78,11 @@ export default function HeroVideo({ onVideoReady, onVideoEnd }: HeroVideoProps) 
         onClick={handleTap}
         onTouchEnd={handleTap}
         className="absolute inset-0 w-full h-full object-cover cursor-pointer"
-        style={{ opacity: 1 }}
+        style={{
+          opacity: 1,
+          display: "block",
+          objectFit: "cover",
+        }}
       />
 
       {/* Bouncing "Tap to open" text - shown only before first interaction */}

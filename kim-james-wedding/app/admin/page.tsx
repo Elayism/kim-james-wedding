@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import useSWR, { useSWRConfig } from "swr";
+import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 
 interface GuestItem {
@@ -23,29 +22,171 @@ interface RsvpRecord {
   created_at?: string;
 }
 
+const SAMPLE_DATA: RsvpRecord[] = [
+  {
+    id: "1",
+    full_name: "Maria Santos",
+    email: "maria@example.com",
+    attending: "accepts",
+    guest_count: 3,
+    meal_preference: "Chicken",
+    dietary_restrictions: "Nut Allergy",
+    message: "So happy for both of you! See you there!",
+    guest_details: [
+      { name: "Maria Santos", meal: "Chicken" },
+      { name: "Juan Santos", meal: "Beef" },
+      { name: "Sofia Santos", meal: "Chicken" },
+    ],
+    is_deleted: false,
+    created_at: "2026-08-10T10:00:00Z",
+  },
+  {
+    id: "2",
+    full_name: "Carlos Reyes",
+    email: "carlos@example.com",
+    attending: "accepts",
+    guest_count: 2,
+    meal_preference: "Beef",
+    dietary_restrictions: "None",
+    message: "Congratulations Kim & James!",
+    guest_details: [
+      { name: "Carlos Reyes", meal: "Beef" },
+      { name: "Elena Reyes", meal: "Fish" },
+    ],
+    is_deleted: false,
+    created_at: "2026-08-11T14:30:00Z",
+  },
+  {
+    id: "3",
+    full_name: "Ana Cruz",
+    email: "ana@example.com",
+    attending: "declines",
+    guest_count: 1,
+    meal_preference: "Vegetarian",
+    dietary_restrictions: null,
+    message: "Wishing you both a lifetime of love and happiness!",
+    guest_details: [],
+    is_deleted: false,
+    created_at: "2026-08-12T09:15:00Z",
+  },
+  {
+    id: "4",
+    full_name: "David Kim",
+    email: "david@example.com",
+    attending: "accepts",
+    guest_count: 2,
+    meal_preference: "Pork",
+    dietary_restrictions: "Gluten-free",
+    message: "Excited to celebrate with you!",
+    guest_details: [
+      { name: "David Kim", meal: "Pork" },
+      { name: "Lisa Kim", meal: "Chicken" },
+    ],
+    is_deleted: false,
+    created_at: "2026-08-13T16:45:00Z",
+  },
+  {
+    id: "5",
+    full_name: "Sophie Turner",
+    email: "sophie@example.com",
+    attending: "accepts",
+    guest_count: 1,
+    meal_preference: "Other",
+    dietary_restrictions: "Vegan",
+    message: "So happy for you both!",
+    guest_details: [
+      { name: "Sophie Turner", meal: "Other" },
+    ],
+    is_deleted: false,
+    created_at: "2026-08-14T11:20:00Z",
+  },
+  {
+    id: "6",
+    full_name: "Michael Brown",
+    email: "michael@example.com",
+    attending: "declines",
+    guest_count: 1,
+    meal_preference: "Chicken",
+    dietary_restrictions: null,
+    message: "Sorry we can't make it.",
+    guest_details: [],
+    is_deleted: false,
+    created_at: "2026-08-15T08:00:00Z",
+  },
+  {
+    id: "7",
+    full_name: "Jessica Lee",
+    email: "jessica@example.com",
+    attending: "accepts",
+    guest_count: 4,
+    meal_preference: "Chicken",
+    dietary_restrictions: "Shellfish allergy",
+    message: "Can't wait to celebrate!",
+    guest_details: [
+      { name: "Jessica Lee", meal: "Chicken" },
+      { name: "Tom Lee", meal: "Beef" },
+      { name: "Amy Lee", meal: "Fish" },
+      { name: "Jerry Lee", meal: "Chicken" },
+    ],
+    is_deleted: false,
+    created_at: "2026-08-16T13:10:00Z",
+  },
+  {
+    id: "8",
+    full_name: "Ryan Garcia",
+    email: "ryan@example.com",
+    attending: "accepts",
+    guest_count: 2,
+    meal_preference: "Vegetarian",
+    dietary_restrictions: null,
+    message: "Congratulations!",
+    guest_details: [
+      { name: "Ryan Garcia", meal: "Vegetarian" },
+      { name: "Mia Garcia", meal: "Vegetarian" },
+    ],
+    is_deleted: false,
+    created_at: "2026-08-17T10:45:00Z",
+  },
+  {
+    id: "9",
+    full_name: "Emily Watson",
+    email: "emily@example.com",
+    attending: "declines",
+    guest_count: 1,
+    meal_preference: "Fish",
+    dietary_restrictions: null,
+    message: "Sad to miss it!",
+    guest_details: [],
+    is_deleted: false,
+    created_at: "2026-08-18T15:30:00Z",
+  },
+  {
+    id: "10",
+    full_name: "Daniel Martinez",
+    email: "daniel@example.com",
+    attending: "accepts",
+    guest_count: 3,
+    meal_preference: "Beef",
+    dietary_restrictions: "Dairy allergy",
+    message: "Looking forward to it!",
+    guest_details: [
+      { name: "Daniel Martinez", meal: "Beef" },
+      { name: "Anna Martinez", meal: "Chicken" },
+      { name: "Lucas Martinez", meal: "Beef" },
+    ],
+    is_deleted: false,
+    created_at: "2026-08-19T09:00:00Z",
+  },
+];
+
 const PIE_COLORS: Record<string, string> = {
   Chicken: "#B8A88A",
   Beef: "#8B5E3C",
   Vegetarian: "#6B8E23",
   Fish: "#4682B4",
   Pork: "#D2691E",
-  "Kids Meal": "#E4D5B7",
   Other: "#A9A9A9",
 };
-
-const fetcher = (url: string) => fetch(url).then((res) => {
-  if (!res.ok) {
-    return res.json().then((json) => {
-      throw new Error(json.message || `HTTP ${res.status}`);
-    });
-  }
-  return res.json();
-}).then((json) => {
-  if (json && typeof json === 'object' && 'data' in json) {
-    return (json as any).data as RsvpRecord[];
-  }
-  return json as RsvpRecord[];
-});
 
 function IconLock() {
   return (
@@ -95,14 +236,6 @@ function IconClipboard() {
   );
 }
 
-function IconMail() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-    </svg>
-  );
-}
-
 function IconX() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -134,8 +267,9 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"active" | "deleted">("active");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "info" } | null>(null);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const { mutate } = useSWRConfig();
+
+  // Static sample data - no database connection
+  const [records, setRecords] = useState<RsvpRecord[]>(SAMPLE_DATA);
 
   const [modal, setModal] = useState<{
     open: boolean;
@@ -160,49 +294,19 @@ export default function AdminDashboard() {
     message: "",
   });
 
-  useEffect(() => {
-    setIsAuthenticated(false);
-  }, []);
-
-  const { data: activeData, isLoading: activeLoading, error: activeError } = useSWR<RsvpRecord[]>(
-    isAuthenticated ? "/api/rsvp?type=active" : null,
-    fetcher,
-    {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      refreshInterval: 0,
-      onError: (err) => {
-        console.error("SWR active fetch error:", err);
-        setApiError(err.message);
-      },
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordInput === "wedding2027") {
+      setIsAuthenticated(true);
+      setError("");
+    } else {
+      setError("Incorrect password. Please try again.");
+      setPasswordInput("");
     }
-  );
+  };
 
-  const { data: deletedData, isLoading: deletedLoading, error: deletedError } = useSWR<RsvpRecord[]>(
-    isAuthenticated ? "/api/rsvp?type=deleted" : null,
-    fetcher,
-    {
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
-      refreshInterval: 0,
-      onError: (err) => {
-        console.error("SWR deleted fetch error:", err);
-        setApiError(err.message);
-      },
-    }
-  );
-
-  const activeRecords = useMemo(() => {
-    if (activeError) return [] as RsvpRecord[];
-    return Array.isArray(activeData) ? activeData : [];
-  }, [activeData, activeError]);
-
-  const deletedRecords = useMemo(() => {
-    if (deletedError) return [] as RsvpRecord[];
-    return Array.isArray(deletedData) ? deletedData : [];
-  }, [deletedData, deletedError]);
-
-  const loading = activeLoading || deletedLoading;
+  const activeRecords = records.filter((r) => !r.is_deleted);
+  const deletedRecords = records.filter((r) => r.is_deleted);
 
   const showToast = (message: string, type: "success" | "info" = "success") => {
     setNotification({ message, type });
@@ -217,107 +321,41 @@ export default function AdminDashboard() {
     setModal((prev) => ({ ...prev, open: false }));
   };
 
-  const revalidate = () => {
-    mutate("/api/rsvp?type=active");
-    mutate("/api/rsvp?type=deleted");
-    setApiError(null);
-  };
-
-  const handleDelete = async (id: string | number, name: string) => {
+  const handleDelete = (id: string | number, name: string) => {
     openModal(
       "Move to Deleted History?",
       `Are you sure you want to move RSVP for "${name}" to Deleted History?`,
-      async () => {
-        closeModal();
-        const record = activeRecords.find((r) => r.id === id);
-        if (!record) return;
-
-        const updatedActive = activeRecords.filter((r) => r.id !== id);
-        const updatedDeleted = [record, ...deletedRecords];
-
-        mutate("/api/rsvp?type=active", updatedActive, false);
-        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
+      () => {
+        setRecords((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, is_deleted: true } : r))
+        );
         showToast(`Moved "${name}" to Deleted History`, "info");
-
-        try {
-          const res = await fetch(`/api/rsvp?id=${id}`, { method: "DELETE" });
-          const json = await res.json();
-          if (!res.ok || !json.success) {
-            showToast(json.message || "Failed to delete record", "info");
-            revalidate();
-          }
-        } catch (err) {
-          console.error("Delete error:", err);
-          showToast("Network error while deleting", "info");
-          revalidate();
-        }
       },
       "danger"
     );
   };
 
-  const handleRestore = async (id: string | number, name: string) => {
+  const handleRestore = (id: string | number, name: string) => {
     openModal(
       "Restore RSVP?",
       `Are you sure you want to restore "${name}" back to Active RSVPs?`,
-      async () => {
-        closeModal();
-        const record = deletedRecords.find((r) => r.id === id);
-        if (!record) return;
-
-        const updatedDeleted = deletedRecords.filter((r) => r.id !== id);
-        const updatedActive = [record, ...activeRecords];
-
-        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
-        mutate("/api/rsvp?type=active", updatedActive, false);
+      () => {
+        setRecords((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, is_deleted: false } : r))
+        );
         showToast(`Restored "${name}" back to Active RSVPs`, "success");
-
-        try {
-          const res = await fetch("/api/rsvp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "restore", id }),
-          });
-          const json = await res.json();
-          if (!res.ok || !json.success) {
-            showToast(json.message || "Failed to restore record", "info");
-            revalidate();
-          }
-        } catch (err) {
-          console.error("Restore error:", err);
-          showToast("Network error while restoring", "info");
-          revalidate();
-        }
       },
       "info"
     );
   };
 
-  const handlePermanentDelete = async (id: string | number, name: string) => {
+  const handlePermanentDelete = (id: string | number, name: string) => {
     openModal(
       "Permanently Delete?",
       `Are you sure you want to PERMANENTLY delete the RSVP for "${name}"? This action cannot be undone.`,
-      async () => {
-        closeModal();
-        const record = deletedRecords.find((r) => r.id === id);
-        if (!record) return;
-
-        const updatedDeleted = deletedRecords.filter((r) => r.id !== id);
-        mutate("/api/rsvp?type=deleted", updatedDeleted, false);
+      () => {
+        setRecords((prev) => prev.filter((r) => r.id !== id));
         showToast(`Permanently deleted "${name}"`, "info");
-
-        try {
-          const res = await fetch(`/api/rsvp?id=${id}&permanent=true`, { method: "DELETE" });
-          const json = await res.json();
-          if (!res.ok || !json.success) {
-            showToast(json.message || "Failed to permanently delete record", "info");
-            revalidate();
-          }
-        } catch (err) {
-          console.error("Permanent Delete error:", err);
-          showToast("Network error while deleting", "info");
-          revalidate();
-        }
       },
       "danger"
     );
@@ -340,10 +378,11 @@ export default function AdminDashboard() {
     setEditModal({ open: false, record: null });
   };
 
-  const handleEditSave = async () => {
+  const handleEditSave = () => {
     if (!editModal.record) return;
 
-    const updates = {
+    const updatedRecord: RsvpRecord = {
+      ...editModal.record,
       full_name: editForm.full_name,
       email: editForm.email || null,
       attending: editForm.attending,
@@ -353,29 +392,11 @@ export default function AdminDashboard() {
       message: editForm.message,
     };
 
-    const updatedRecord = { ...editModal.record, ...updates };
-
-    mutate("/api/rsvp?type=active", activeRecords.map((r) => r.id === editModal.record!.id ? updatedRecord : r), false);
-    mutate("/api/rsvp?type=deleted", deletedRecords.map((r) => r.id === editModal.record!.id ? updatedRecord : r), false);
+    setRecords((prev) =>
+      prev.map((r) => (r.id === editModal.record!.id ? updatedRecord : r))
+    );
     showToast(`Updated RSVP for "${editForm.full_name}"`, "success");
     closeEditModal();
-
-    try {
-      const res = await fetch("/api/rsvp", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editModal.record.id, ...updates }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        showToast(json.message || "Failed to update record", "info");
-        revalidate();
-      }
-    } catch (err) {
-      console.error("Update error:", err);
-      showToast("Network error while updating", "info");
-      revalidate();
-    }
   };
 
   const stats = useMemo(() => {
@@ -520,18 +541,6 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordInput === "wedding2027") {
-      setIsAuthenticated(true);
-      setError("");
-      setApiError(null);
-    } else {
-      setError("Incorrect password. Please try again.");
-      setPasswordInput("");
-    }
-  };
-
   return (
     <div className="min-h-screen w-full bg-[var(--color-ivory)] text-[var(--color-espresso)] font-serif">
       {!isAuthenticated ? (
@@ -586,13 +595,6 @@ export default function AdminDashboard() {
             >
               <span>{notification.type === "success" ? <IconCheck /> : <IconRefresh />}</span>
               <span>{notification.message}</span>
-            </div>
-          )}
-
-          {apiError && (
-            <div className="mx-4 md:mx-8 mt-4 p-4 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 font-sans">
-              <strong>Connection Notice:</strong> {apiError}. Showing cached data if available.
-              <button onClick={revalidate} className="ml-3 underline font-semibold">Retry</button>
             </div>
           )}
 
@@ -703,7 +705,6 @@ export default function AdminDashboard() {
                       <option value="Fish">Fish</option>
                       <option value="Vegetarian">Vegetarian</option>
                       <option value="Pork">Pork</option>
-                      <option value="Kids Meal">Kids Meal</option>
                       <option value="Other">Other</option>
                     </select>
                   </div>
@@ -767,11 +768,11 @@ export default function AdminDashboard() {
 
                 <div className="flex items-center gap-2 font-sans">
                   <button
-                    onClick={revalidate}
+                    onClick={() => setRecords([...SAMPLE_DATA])}
                     className="inline-flex items-center gap-1.5 px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-full border border-[var(--color-gold-brown)] text-[var(--color-gold-brown)] hover:bg-[var(--color-ecru)] transition whitespace-nowrap"
                   >
                     <IconRefresh />
-                    Refresh
+                    Reset
                   </button>
                   <button
                     onClick={exportCSV}
@@ -976,11 +977,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {loading ? (
-                <div className="py-8 md:py-10 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
-                  Loading RSVP records...
-                </div>
-              ) : filteredRecords.length === 0 ? (
+              {filteredRecords.length === 0 ? (
                 <div className="py-8 md:py-10 text-center text-xs font-sans text-[var(--color-soft-taupe)]">
                   {activeTab === "active"
                     ? "No active guest records found."

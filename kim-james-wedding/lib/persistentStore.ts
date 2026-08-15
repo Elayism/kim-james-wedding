@@ -38,7 +38,7 @@ const DEFAULT_RECORDS: RsvpRecord[] = [
     guest_details: [
       { name: "Maria Santos", meal: "Chicken" },
       { name: "Juan Santos", meal: "Beef" },
-      { name: "Sofia Santos", meal: "Kids Meal" },
+      { name: "Sofia Santos", meal: "Chicken" },
     ],
     is_deleted: false,
     created_at: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),

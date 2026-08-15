@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import Login from "./login";
 import LogoutButton from "./LogoutButton";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export interface RsvpRecord {
   id?: string | number;
@@ -15,6 +14,129 @@ export interface RsvpRecord {
   message: string;
   created_at: string;
 }
+
+const SAMPLE_DATA: RsvpRecord[] = [
+  {
+    id: "1",
+    full_name: "Maria Santos",
+    email: "maria@example.com",
+    attending: "accepts",
+    guest_count: 3,
+    meal_preference: "Chicken",
+    meal_other: null,
+    dietary_restrictions: "Nut Allergy",
+    message: "So happy for both of you! See you there!",
+    created_at: "2026-08-10T10:00:00Z",
+  },
+  {
+    id: "2",
+    full_name: "Carlos Reyes",
+    email: "carlos@example.com",
+    attending: "accepts",
+    guest_count: 2,
+    meal_preference: "Beef",
+    meal_other: null,
+    dietary_restrictions: "None",
+    message: "Congratulations Kim & James!",
+    created_at: "2026-08-11T14:30:00Z",
+  },
+  {
+    id: "3",
+    full_name: "Ana Cruz",
+    email: "ana@example.com",
+    attending: "declines",
+    guest_count: 1,
+    meal_preference: "Vegetarian",
+    meal_other: null,
+    dietary_restrictions: null,
+    message: "Wishing you both a lifetime of love and happiness!",
+    created_at: "2026-08-12T09:15:00Z",
+  },
+  {
+    id: "4",
+    full_name: "David Kim",
+    email: "david@example.com",
+    attending: "accepts",
+    guest_count: 2,
+    meal_preference: "Pork",
+    meal_other: null,
+    dietary_restrictions: "Gluten-free",
+    message: "Excited to celebrate with you!",
+    created_at: "2026-08-13T16:45:00Z",
+  },
+  {
+    id: "5",
+    full_name: "Sophie Turner",
+    email: "sophie@example.com",
+    attending: "accepts",
+    guest_count: 1,
+    meal_preference: "Other",
+    meal_other: "Vegan",
+    dietary_restrictions: "Vegan",
+    message: "So happy for you both!",
+    created_at: "2026-08-14T11:20:00Z",
+  },
+  {
+    id: "6",
+    full_name: "Michael Brown",
+    email: "michael@example.com",
+    attending: "declines",
+    guest_count: 1,
+    meal_preference: "Chicken",
+    meal_other: null,
+    dietary_restrictions: null,
+    message: "Sorry we can't make it.",
+    created_at: "2026-08-15T08:00:00Z",
+  },
+  {
+    id: "7",
+    full_name: "Jessica Lee",
+    email: "jessica@example.com",
+    attending: "accepts",
+    guest_count: 4,
+    meal_preference: "Chicken",
+    meal_other: null,
+    dietary_restrictions: "Shellfish allergy",
+    message: "Can't wait to celebrate!",
+    created_at: "2026-08-16T13:10:00Z",
+  },
+  {
+    id: "8",
+    full_name: "Ryan Garcia",
+    email: "ryan@example.com",
+    attending: "accepts",
+    guest_count: 2,
+    meal_preference: "Vegetarian",
+    meal_other: null,
+    dietary_restrictions: null,
+    message: "Congratulations!",
+    created_at: "2026-08-17T10:45:00Z",
+  },
+  {
+    id: "9",
+    full_name: "Emily Watson",
+    email: "emily@example.com",
+    attending: "declines",
+    guest_count: 1,
+    meal_preference: "Fish",
+    meal_other: null,
+    dietary_restrictions: null,
+    message: "Sad to miss it!",
+    created_at: "2026-08-18T15:30:00Z",
+  },
+  {
+    id: "10",
+    full_name: "Daniel Martinez",
+    email: "daniel@example.com",
+    attending: "accepts",
+    guest_count: 3,
+    meal_preference: "Beef",
+    meal_other: null,
+    dietary_restrictions: "Dairy allergy",
+    message: "Looking forward to it!",
+    created_at: "2026-08-19T09:00:00Z",
+  },
+];
 
 function formatDate(dateStr: string) {
   if (!dateStr) return "N/A";
@@ -42,33 +164,8 @@ export default async function DashboardPage() {
     return <Login />;
   }
 
-  // Fetch RSVPs from Supabase using admin service role key (with a 3s timeout)
-  let rsvps: RsvpRecord[] = [];
-  let fetchError: string | null = null;
-
-  try {
-    const fetchPromise = supabaseAdmin
-      .from("rsvps")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
-      setTimeout(() => resolve({ data: null, error: { message: "Connection timeout. Check database credentials." } }), 3000)
-    );
-
-    const result = (await Promise.race([fetchPromise, timeoutPromise])) as any;
-    const { data, error } = result || {};
-
-    if (error) {
-      console.error("Supabase admin fetch error:", error);
-      fetchError = error.message || "Failed to fetch RSVPs";
-    } else if (data && Array.isArray(data)) {
-      rsvps = data as RsvpRecord[];
-    }
-  } catch (err: any) {
-    console.error("Dashboard fetch exception:", err);
-    fetchError = err?.message || "Could not connect to database.";
-  }
+  // Use static sample data - no database connection
+  const rsvps = SAMPLE_DATA;
 
   // Calculate total guests attending (sum of guest_count where attending = 'accepts')
   const totalAttendingGuests = rsvps
@@ -102,14 +199,6 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Database Connection Notice / Error */}
-        {fetchError && (
-          <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 font-sans">
-            <strong>Database Status Notice:</strong> {fetchError}{" "}
-            {rsvps.length === 0 ? "No records available." : `Showing ${rsvps.length} cached record(s).`}
-          </div>
-        )}
-
         {/* RSVP Data Table */}
         <div className="overflow-x-auto rounded-xl border border-[var(--color-warm-sand)] shadow-md bg-[var(--color-antique-white)]">
           <table className="w-full text-left border-collapse font-serif">
@@ -129,9 +218,7 @@ export default async function DashboardPage() {
               {rsvps.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-8 text-center text-sm text-[var(--color-soft-taupe)] italic">
-                    {fetchError
-                      ? "Unable to load records. Please check your connection."
-                      : "No RSVP submissions found yet."}
+                    No RSVP submissions found yet.
                   </td>
                 </tr>
               ) : (

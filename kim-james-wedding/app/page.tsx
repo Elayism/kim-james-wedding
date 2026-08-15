@@ -48,6 +48,14 @@ export default function Home() {
     }
   };
 
+  // Lock scroll immediately while video is the landing view
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   useEffect(() => {
     const audioEl = audioRef.current;
     if (!audioEl) return;
@@ -79,7 +87,7 @@ export default function Home() {
       <NavBar isPlaying={!audioRef.current?.paused} onToggleAudio={toggleMusic} />
       <FloatingPetals />
 
-      {/* Main Scroll Container */}
+      {/* Main Scroll Container - starts immediately with video */}
       <div className="snap-container">
         {/* Video Section - full viewport, scroll locked until video ends */}
         <section
