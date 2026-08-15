@@ -52,7 +52,6 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
         src="/videos/envelope-open.mp4"
         playsInline
         preload="auto"
-        poster="/images/hero-bg.jpg"
         onEnded={handleVideoEnded}
         onError={handleVideoError}
         className="absolute inset-0 w-full h-full object-cover"
