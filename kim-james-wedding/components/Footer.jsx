@@ -8,7 +8,6 @@ export default function Footer() {
   return (
     <div
       className="w-full flex flex-col items-center justify-center"
-      style={{ backgroundColor: "var(--color-ivory)" }}
     >
       <FadeInSection>
         <motion.h2 variants={childVariants} className="text-3xl md:text-5xl font-serif text-[var(--color-gold-brown)] font-letterpress mb-1">

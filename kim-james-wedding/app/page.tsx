@@ -108,44 +108,44 @@ export default function Home() {
           {/* All sections in snap scroll container */}
           <div className="snap-container h-dvh">
             {/* Hero Section */}
-            <section id="hero" className="snap-section min-h-screen py-6 md:py-0 bg-black">
+            <section id="hero" className="snap-section min-h-screen py-6 md:py-0">
               <Hero />
             </section>
 
             {/* Our Story Section */}
-            <section id="our-story" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-antique-white)]">
+            <section id="our-story" className="snap-section min-h-screen py-6 md:py-0">
               <OurStory />
             </section>
 
             {/* Event Details Section */}
-            <section id="event-details" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-ivory)]">
+            <section id="event-details" className="snap-section min-h-screen py-6 md:py-0">
               <EventDetails />
             </section>
 
             {/* Dress Code Section */}
-            <section id="dress-code" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-ecru)]">
+            <section id="dress-code" className="snap-section min-h-screen py-6 md:py-0">
               <DressCode />
             </section>
 
             {/* RSVP Section */}
-            <section id="rsvp" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-antique-white)]">
+            <section id="rsvp" className="snap-section min-h-screen py-6 md:py-0">
               <FadeInSection>
                 <RSVPForm />
               </FadeInSection>
             </section>
 
             {/* Gift Registry Section */}
-            <section id="gift-registry" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-ivory)]">
+            <section id="gift-registry" className="snap-section min-h-screen py-6 md:py-0">
               <GiftRegistry />
             </section>
 
             {/* Gallery Section */}
-            <section id="gallery" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-ecru)]">
+            <section id="gallery" className="snap-section min-h-screen py-6 md:py-0">
               <Gallery />
             </section>
 
             {/* Footer Section */}
-            <section id="footer" className="snap-section min-h-screen py-6 md:py-0 bg-[var(--color-antique-white)]">
+            <section id="footer" className="snap-section min-h-screen py-6 md:py-0">
               <Footer />
             </section>
           </div>

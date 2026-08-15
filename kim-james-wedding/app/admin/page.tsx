@@ -521,7 +521,7 @@ export default function AdminDashboard() {
           )}
 
           {/* Navigation / Header */}
-          <div className="flex flex-col gap-3 pb-4 border-b border-[var(--color-champagne)]">
+          <div className="flex flex-col gap-3 pb-4 border-b border-[var(--color-champagne)] sticky top-0 bg-[var(--color-ivory)] z-30">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <Link
