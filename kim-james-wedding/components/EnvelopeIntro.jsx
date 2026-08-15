@@ -1,34 +1,24 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
   const [isEnding, setIsEnding] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const videoRef = useRef(null);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = true;
-      videoRef.current.volume = 0;
-      videoRef.current.play().catch((err) => {
-        console.error("Autoplay failed", err);
-      });
-    }
-  }, []);
-
   const handleTap = () => {
     if (hasInteracted) return;
     setHasInteracted(true);
 
-    if (onPlayAudio) {
-      onPlayAudio();
-    }
-
     if (videoRef.current) {
-      videoRef.current.muted = true;
-      videoRef.current.volume = 0;
-      videoRef.current.play().catch((err) => {
+      videoRef.current.muted = false;
+      videoRef.current.volume = 1.0;
+      videoRef.current.play().then(() => {
+        if (onPlayAudio) {
+          onPlayAudio();
+        }
+      }).catch((err) => {
         console.error("Video play failed", err);
         setTimeout(() => {
           if (onOpenComplete) onOpenComplete();
@@ -60,10 +50,9 @@ export default function EnvelopeIntro({ onOpenComplete, onPlayAudio }) {
       <video
         ref={videoRef}
         src="/videos/envelope-open.mp4"
-        muted
-        defaultMuted
         playsInline
         preload="auto"
+        poster="/images/hero-bg.jpg"
         onEnded={handleVideoEnded}
         onError={handleVideoError}
         className="absolute inset-0 w-full h-full object-cover"

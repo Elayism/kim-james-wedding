@@ -105,39 +105,46 @@ export default function Home() {
           <NavBar isPlaying={isPlaying} onToggleAudio={toggleMusic} />
           <FloatingPetals />
           
-          {/* Hero Section - full viewport height */}
-          <section id="hero" className="relative w-full h-screen">
-            <Hero />
-          </section>
-
-          {/* Content sections - snap scrolling container */}
+          {/* All sections in snap scroll container */}
           <div className="snap-container">
+            {/* Hero Section - full viewport height */}
+            <section id="hero" className="snap-section h-screen">
+              <Hero />
+            </section>
+
+            {/* Our Story Section */}
             <section id="our-story" className="snap-section min-h-screen py-16 md:py-24">
               <OurStory />
             </section>
 
+            {/* Event Details Section */}
             <section id="event-details" className="snap-section min-h-screen py-16 md:py-24">
               <EventDetails />
             </section>
 
+            {/* Dress Code Section */}
             <section id="dress-code" className="snap-section min-h-screen py-16 md:py-24">
               <DressCode />
             </section>
 
+            {/* RSVP Section */}
             <section id="rsvp" className="snap-section min-h-screen py-16 md:py-24" style={{ backgroundColor: "var(--color-ivory)" }}>
               <FadeInSection>
                 <RSVPForm />
               </FadeInSection>
             </section>
 
+            {/* Gift Registry Section */}
             <section id="gift-registry" className="snap-section min-h-screen py-16 md:py-24">
               <GiftRegistry />
             </section>
 
+            {/* Gallery Section */}
             <section id="gallery" className="snap-section min-h-screen py-16 md:py-24">
               <Gallery />
             </section>
 
+            {/* Footer Section */}
             <section id="footer" className="snap-section min-h-screen py-16 md:py-24">
               <Footer />
             </section>

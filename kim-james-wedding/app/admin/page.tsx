@@ -66,14 +66,19 @@ export default function AdminDashboard() {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const resActive = await fetch("/api/rsvp?type=active");
-      const jsonActive = await resActive.json();
+      const [resActive, resDeleted] = await Promise.all([
+        fetch("/api/rsvp?type=active"),
+        fetch("/api/rsvp?type=deleted"),
+      ]);
+
+      const [jsonActive, jsonDeleted] = await Promise.all([
+        resActive.json(),
+        resDeleted.json(),
+      ]);
+
       if (resActive.ok && jsonActive.success) {
         setActiveRecords(jsonActive.data || []);
       }
-
-      const resDeleted = await fetch("/api/rsvp?type=deleted");
-      const jsonDeleted = await resDeleted.json();
       if (resDeleted.ok && jsonDeleted.success) {
         setDeletedRecords(jsonDeleted.data || []);
       }
@@ -91,22 +96,35 @@ export default function AdminDashboard() {
   const handleDelete = async (id: string | number, name: string) => {
     if (!confirm(`Are you sure you want to move RSVP for "${name}" to Deleted History?`)) return;
 
+    const record = activeRecords.find((r) => r.id === id);
+    if (!record) return;
+
+    setActiveRecords((prev) => prev.filter((r) => r.id !== id));
+    setDeletedRecords((prev) => [record, ...prev]);
+    showToast(`Moved "${name}" to Deleted History`, "info");
+
     try {
       const res = await fetch(`/api/rsvp?id=${id}`, { method: "DELETE" });
       const json = await res.json();
-      if (res.ok && json.success) {
-        showToast(`Moved "${name}" to Deleted History`, "info");
+      if (!res.ok || !json.success) {
+        showToast(json.message || "Failed to delete record", "info");
         fetchRecords();
-      } else {
-        alert(json.message || "Failed to delete record");
       }
     } catch (err) {
       console.error("Delete error:", err);
-      alert("Network error while deleting");
+      showToast("Network error while deleting", "info");
+      fetchRecords();
     }
   };
 
   const handleRestore = async (id: string | number, name: string) => {
+    const record = deletedRecords.find((r) => r.id === id);
+    if (!record) return;
+
+    setDeletedRecords((prev) => prev.filter((r) => r.id !== id));
+    setActiveRecords((prev) => [record, ...prev]);
+    showToast(`Restored "${name}" back to Active RSVPs`, "success");
+
     try {
       const res = await fetch("/api/rsvp", {
         method: "POST",
@@ -114,33 +132,38 @@ export default function AdminDashboard() {
         body: JSON.stringify({ action: "restore", id }),
       });
       const json = await res.json();
-      if (res.ok && json.success) {
-        showToast(`Restored "${name}" back to Active RSVPs`, "success");
+      if (!res.ok || !json.success) {
+        showToast(json.message || "Failed to restore record", "info");
         fetchRecords();
-      } else {
-        alert(json.message || "Failed to restore record");
       }
     } catch (err) {
       console.error("Restore error:", err);
-      alert("Network error while restoring");
+      showToast("Network error while restoring", "info");
+      fetchRecords();
     }
   };
 
   const handlePermanentDelete = async (id: string | number, name: string) => {
     if (!confirm(`Are you sure you want to PERMANENTLY delete the RSVP for "${name}"? This action cannot be undone.`)) return;
 
+    const record = deletedRecords.find((r) => r.id === id);
+    if (record) {
+      setDeletedRecords((prev) => prev.filter((r) => r.id !== id));
+    }
+
     try {
       const res = await fetch(`/api/rsvp?id=${id}&permanent=true`, { method: "DELETE" });
       const json = await res.json();
       if (res.ok && json.success) {
         showToast(`Permanently deleted "${name}"`, "info");
-        fetchRecords();
       } else {
-        alert(json.message || "Failed to permanently delete record");
+        showToast(json.message || "Failed to permanently delete record", "info");
+        fetchRecords();
       }
     } catch (err) {
       console.error("Permanent Delete error:", err);
-      alert("Network error while deleting");
+      showToast("Network error while deleting", "info");
+      fetchRecords();
     }
   };
 
@@ -321,7 +344,7 @@ export default function AdminDashboard() {
                 href="/"
                 className="text-xs uppercase tracking-widest font-sans font-bold text-[var(--color-gold-brown)] hover:underline"
               >
-                ← Back to Wedding Site
+                ← Back to Invitation Site
               </Link>
             </div>
           </div>
@@ -350,7 +373,7 @@ export default function AdminDashboard() {
                   href="/"
                   className="text-xs uppercase tracking-widest font-sans font-bold text-[var(--color-gold-brown)] hover:underline"
                 >
-                  ← Back to Wedding Site
+                  ← Back to Invitation Site
                 </Link>
                 <h1 className="text-2xl md:text-4xl font-serif text-[var(--color-gold-brown)] mt-1">
                   Guest RSVP Analytics & Management Dashboard

@@ -155,7 +155,12 @@ export async function GET(request: Request) {
 
       const { data, error } = await query;
       if (!error && data) {
-        return NextResponse.json({ success: true, data });
+        return NextResponse.json({ success: true, data }, {
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+            'Pragma': 'no-cache',
+          }
+        });
       }
     } catch (e) {
       console.warn("Supabase fetch error, fallback to in-memory:", e);
@@ -169,7 +174,12 @@ export async function GET(request: Request) {
       ? records.filter((r) => r.is_deleted)
       : records.filter((r) => !r.is_deleted);
 
-  return NextResponse.json({ success: true, data: filtered });
+  return NextResponse.json({ success: true, data: filtered }, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      'Pragma': 'no-cache',
+    }
+  });
 }
 
 // DELETE: Soft delete an RSVP record
