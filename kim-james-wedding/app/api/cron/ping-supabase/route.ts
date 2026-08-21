@@ -1,37 +1,47 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin, isAdminConfigured } from "@/lib/supabaseAdmin";
+import { getDatabaseClient, isDatabaseConfigured } from "@/lib/supabaseServer";
 
-// Vercel Cron: runs every 6 hours to prevent Supabase free-tier pause
-// Configure in vercel.json: { "crons": [{ "path": "/api/cron/ping-supabase", "schedule": "0 */6 * * *" }] }
+// Vercel Cron: pings the Supabase database periodically to prevent free-tier pause
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    if (!isAdminConfigured()) {
-      return NextResponse.json({ success: false, message: "Supabase not configured" }, { status: 200 });
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        { success: false, message: "Database not configured" },
+        { status: 500 }
+      );
     }
 
-    // Minimal read — just checks row count, does not touch any user data
-    const { count, error } = await supabaseAdmin
+    const db = getDatabaseClient();
+
+    // Lightweight query that does not modify or pollute any user data
+    const { count, error } = await db
       .from("rsvps")
       .select("id", { count: "exact", head: true });
 
     if (error) {
-      console.error("Supabase keep-alive ping error:", error.message);
-      return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+      console.error("[keep-alive] Supabase ping error:", error.message);
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: 500 }
+      );
     }
 
-    const ts = new Date().toISOString();
-    console.log(`[keep-alive] Supabase active at ${ts}. RSVP count: ${count}`);
+    const now = new Date().toISOString();
+    console.log(`[keep-alive] Supabase active at ${now}. RSVP count: ${count}`);
+
     return NextResponse.json({
       success: true,
-      message: "Supabase is active",
+      message: "Supabase keep-alive ping successful. Database is active.",
       rsvp_count: count,
-      pinged_at: ts,
+      timestamp: now,
     });
-  } catch (error: unknown) {
-    const err = error as Error;
-    console.error("Supabase keep-alive exception:", err?.message);
-    return NextResponse.json({ success: false, message: err?.message || "Internal server error" }, { status: 500 });
+  } catch (error: any) {
+    console.error("[keep-alive] Supabase ping exception:", error);
+    return NextResponse.json(
+      { success: false, message: error?.message || "Internal server error" },
+      { status: 500 }
+    );
   }
 }

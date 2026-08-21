@@ -1,64 +1,66 @@
 import { NextResponse } from "next/server";
 import { rsvpSchema } from "@/lib/rsvpSchema";
-import { isSupabaseConfigured } from "@/lib/supabaseClient";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
-import {
-  getInMemoryRSVPs,
-  addInMemoryRSVP,
-  softDeleteInMemoryRSVP,
-  restoreInMemoryRSVP,
-  permanentDeleteInMemoryRSVP,
-  updateInMemoryRSVP,
-  checkDuplicateName,
-  RsvpRecord,
-} from "@/lib/mockStore";
+import { getDatabaseClient, isDatabaseConfigured } from "@/lib/supabaseServer";
 
-// Helper to fetch all records from Supabase (admin/service-role) or fallback
-async function fetchAllRecords(): Promise<RsvpRecord[]> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabaseAdmin
-        .from("rsvps")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) {
-        console.error("Supabase fetchAllRecords error:", error.message, error.code);
-      } else if (data) {
-        return data as RsvpRecord[];
-      }
-    } catch (e) {
-      console.error("Supabase fetchAllRecords exception:", e);
-    }
-  }
-  return getInMemoryRSVPs(true);
+export const dynamic = "force-dynamic";
+
+interface GuestDetail {
+  name?: string;
+  meal?: string;
 }
 
-// POST: Submit new RSVP
+interface RsvpRow {
+  id?: string;
+  full_name: string;
+  email?: string | null;
+  attending: string;
+  guest_count: number;
+  meal_preference: string;
+  dietary_restrictions?: string | null;
+  message?: string | null;
+  guest_details?: GuestDetail[];
+  is_deleted?: boolean;
+  created_at?: string;
+}
+
+// POST: Submit a new RSVP directly to Supabase
 export async function POST(request: Request) {
   try {
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Database configuration error: Supabase environment variables are missing on the server.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const db = getDatabaseClient();
     const body = await request.json();
 
     // Handle Restore Action if requested via body
     if (body.action === "restore" && body.id) {
-      if (isSupabaseConfigured()) {
-        try {
-          const { error } = await supabaseAdmin
-            .from("rsvps")
-            .update({ is_deleted: false })
-            .eq("id", body.id);
-          if (!error) {
-            return NextResponse.json({ success: true, message: "RSVP restored successfully" });
-          }
-          console.error("Supabase restore error:", error.message);
-        } catch (e) {
-          console.error("Supabase restore exception:", e);
-        }
+      const { error } = await db
+        .from("rsvps")
+        .update({ is_deleted: false })
+        .eq("id", body.id);
+
+      if (error) {
+        console.error("Supabase restore error:", error);
+        return NextResponse.json(
+          { success: false, message: `Failed to restore: ${error.message}` },
+          { status: 500 }
+        );
       }
-      restoreInMemoryRSVP(String(body.id));
-      return NextResponse.json({ success: true, message: "RSVP restored in local memory" });
+      return NextResponse.json({
+        success: true,
+        message: "RSVP restored successfully in Supabase.",
+      });
     }
 
-    // Validate against Zod schema
+    // Validate request body with Zod schema
     const parseResult = rsvpSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
@@ -72,279 +74,259 @@ export async function POST(request: Request) {
 
     const data = parseResult.data;
 
-    // --- DUPLICATE CHECK ---
-    const namesToCheck: string[] = [data.full_name];
+    // --- DUPLICATE CHECK AGAINST LIVE DATABASE ---
+    const namesToCheck: string[] = [data.full_name.trim().toLowerCase()];
     if (Array.isArray(data.guests)) {
       data.guests.forEach((g) => {
         if (g.name && g.name.trim() !== "") {
-          namesToCheck.push(g.name);
+          namesToCheck.push(g.name.trim().toLowerCase());
         }
       });
     }
 
-    const duplicateName = await checkDuplicateName(namesToCheck);
+    // Fetch existing active accepted RSVPs from Supabase
+    const { data: existingRows, error: fetchErr } = await db
+      .from("rsvps")
+      .select("full_name, guest_details")
+      .eq("is_deleted", false)
+      .eq("attending", "accepts");
 
-    if (duplicateName) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `RSVP Duplicate Warning: "${duplicateName}" has already registered or been added to a party. Duplicate submissions are not allowed.`,
-        },
-        { status: 400 }
-      );
+    if (fetchErr) {
+      console.warn("Could not check duplicates from database:", fetchErr.message);
+    } else if (existingRows) {
+      const registeredNames = new Set<string>();
+      existingRows.forEach((row: { full_name?: string; guest_details?: GuestDetail[] }) => {
+        if (row.full_name) {
+          registeredNames.add(row.full_name.trim().toLowerCase());
+        }
+        if (Array.isArray(row.guest_details)) {
+          row.guest_details.forEach((g) => {
+            if (g.name) {
+              registeredNames.add(g.name.trim().toLowerCase());
+            }
+          });
+        }
+      });
+
+      for (const name of namesToCheck) {
+        if (registeredNames.has(name)) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: `RSVP Duplicate Notice: "${name}" has already registered or been added to a party. Duplicate submissions are not allowed.`,
+            },
+            { status: 400 }
+          );
+        }
+      }
     }
 
-    // Prepare payload — only include columns that exist in the Supabase table.
-    // The full schema: id (auto), full_name, email, attending, guest_count,
-    //   meal_preference, dietary_restrictions, message, created_at (auto),
-    //   is_deleted (added via migration), guest_details (added via migration).
-    const rsvpPayload: Record<string, unknown> = {
-      full_name: data.full_name,
-      email: data.email || null,
+    // Prepare clean row payload for Supabase
+    const rsvpPayload: RsvpRow = {
+      full_name: data.full_name.trim(),
+      email: data.email && data.email.trim() !== "" ? data.email.trim() : null,
       attending: data.attending,
       guest_count: data.guest_count,
       meal_preference:
         data.meal_preference === "Other" && data.meal_other
           ? `Other: ${data.meal_other}`
           : data.meal_preference,
-      dietary_restrictions: data.dietary_restrictions || null,
-      message: data.message,
-      // created_at is auto-set by Supabase — do not send it manually
+      dietary_restrictions: data.dietary_restrictions && data.dietary_restrictions.trim() !== ""
+        ? data.dietary_restrictions.trim()
+        : null,
+      message: data.message ? data.message.trim() : "",
+      is_deleted: false,
+      guest_details: data.guests || [],
     };
 
-    // Include soft-delete + guest_details only if the columns exist (migration applied)
-    // The code attempts to insert them; Supabase will reject with PGRST204 if missing.
-    // After running the migration SQL below, these will always succeed.
-    rsvpPayload.is_deleted = false;
-    rsvpPayload.guest_details = data.guests || [];
+    // Insert directly into Supabase rsvps table
+    const { data: insertedData, error: insertError } = await db
+      .from("rsvps")
+      .insert([rsvpPayload])
+      .select();
 
-    if (isSupabaseConfigured()) {
-      const { error } = await supabaseAdmin.from("rsvps").insert([rsvpPayload]);
-
-      if (!error) {
-        console.log("RSVP successfully inserted into Supabase for:", data.full_name);
-        return NextResponse.json({
-          success: true,
-          message: "RSVP saved successfully!",
-        });
-      }
-
-      // Log the full error for debugging
-      console.error("Supabase INSERT failed:", {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint,
-      });
-
-      // If columns are missing (PGRST204), fall back to a minimal payload
-      if (error.code === "PGRST204") {
-        console.warn("Schema mismatch detected — columns missing. Retrying with minimal payload.");
-        const minimalPayload: Record<string, unknown> = {
-          full_name: data.full_name,
-          email: data.email || null,
-          attending: data.attending,
-          guest_count: data.guest_count,
-          meal_preference:
-            data.meal_preference === "Other" && data.meal_other
-              ? `Other: ${data.meal_other}`
-              : data.meal_preference,
-          dietary_restrictions: data.dietary_restrictions || null,
-          message: data.message,
-        };
-
-        const { error: fallbackError } = await supabaseAdmin.from("rsvps").insert([minimalPayload]);
-
-        if (!fallbackError) {
-          console.log("RSVP inserted with minimal payload (migration needed for full schema).");
-          return NextResponse.json({
-            success: true,
-            message: "RSVP saved successfully! (Note: run the schema migration for full feature support.)",
-          });
-        }
-
-        console.error("Minimal payload insert also failed:", fallbackError.message);
-        return NextResponse.json({
+    if (insertError) {
+      console.error("Supabase insert error:", insertError);
+      return NextResponse.json(
+        {
           success: false,
-          message: `Database error: ${fallbackError.message}. Please contact the couple.`,
-        }, { status: 500 });
-      }
-
-      return NextResponse.json({
-        success: false,
-        message: `Failed to save RSVP: ${error.message}`,
-      }, { status: 500 });
+          message: `Database error saving RSVP: ${insertError.message}`,
+        },
+        { status: 500 }
+      );
     }
 
-    // Local Fallback only when Supabase is NOT configured
-    addInMemoryRSVP({
-      ...rsvpPayload,
-      id: "local-" + Date.now(),
-      created_at: new Date().toISOString(),
-      is_deleted: false,
-    } as unknown as RsvpRecord);
+    console.log("RSVP successfully persisted to Supabase:", insertedData);
 
     return NextResponse.json({
       success: true,
-      message: "RSVP received successfully.",
+      message: "RSVP confirmed and saved successfully to database.",
+      data: insertedData,
     });
-  } catch (error: unknown) {
-    const err = error as Error;
-    console.error("RSVP POST route error:", err?.message || err);
+  } catch (error: any) {
+    console.error("RSVP route exception:", error);
     return NextResponse.json(
-      { success: false, message: err?.message || "Internal server error" },
+      {
+        success: false,
+        message: error?.message || "Internal server error processing RSVP.",
+      },
       { status: 500 }
     );
   }
 }
 
-// GET: Fetch RSVPs (active or deleted)
+// GET: Fetch RSVPs directly from Supabase
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const type = searchParams.get("type"); // 'active' | 'deleted' | 'all'
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabaseAdmin.from("rsvps").select("*").order("created_at", { ascending: false });
-      if (type === "deleted") {
-        query = query.eq("is_deleted", true);
-      } else if (type !== "all") {
-        // is_deleted may not exist yet — filter safely
-        query = query.or("is_deleted.is.null,is_deleted.eq.false");
-      }
-
-      const { data, error } = await query;
-      if (error) {
-        // If is_deleted column missing, retry without filter
-        if (error.code === "PGRST204" || error.code === "42703") {
-          console.warn("is_deleted column missing — fetching without filter");
-          const { data: allData, error: allError } = await supabaseAdmin
-            .from("rsvps")
-            .select("*")
-            .order("created_at", { ascending: false });
-          if (!allError && allData) {
-            return NextResponse.json({ success: true, data: allData }, {
-              headers: {
-                "Cache-Control": "no-store, no-cache, must-revalidate",
-                "Pragma": "no-cache",
-              },
-            });
-          }
-        }
-        console.error("Supabase GET error:", error.message);
-      } else if (data) {
-        return NextResponse.json({ success: true, data }, {
-          headers: {
-            "Cache-Control": "no-store, no-cache, must-revalidate",
-            "Pragma": "no-cache",
-          },
-        });
-      }
-    } catch (e) {
-      console.error("Supabase GET exception:", e);
+  try {
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        { success: false, message: "Database is not configured.", data: [] },
+        { status: 500 }
+      );
     }
+
+    const db = getDatabaseClient();
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get("type"); // 'active' | 'deleted' | 'all'
+
+    let query = db
+      .from("rsvps")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (type === "deleted") {
+      query = query.eq("is_deleted", true);
+    } else if (type !== "all") {
+      // Default: show active (is_deleted is false or null)
+      query = query.or("is_deleted.is.null,is_deleted.eq.false");
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Supabase GET error:", error);
+      return NextResponse.json(
+        { success: false, message: error.message, data: [] },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, data: data || [] },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+          Pragma: "no-cache",
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error("Supabase GET exception:", error);
+    return NextResponse.json(
+      { success: false, message: error?.message || "Server error", data: [] },
+      { status: 500 }
+    );
   }
-
-  // Fallback
-  const records = await getInMemoryRSVPs(type === "all" || type === "deleted");
-  const filtered =
-    type === "deleted"
-      ? records.filter((r) => r.is_deleted)
-      : type === "all"
-      ? records
-      : records.filter((r) => !r.is_deleted);
-
-  return NextResponse.json({ success: true, data: filtered }, {
-    headers: {
-      "Cache-Control": "no-store, no-cache, must-revalidate",
-      "Pragma": "no-cache",
-    },
-  });
 }
 
-// PUT: Update an RSVP record
+// PUT: Update an RSVP record directly in Supabase
 export async function PUT(request: Request) {
   try {
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        { success: false, message: "Database is not configured." },
+        { status: 500 }
+      );
+    }
+
+    const db = getDatabaseClient();
     const body = await request.json();
     const { id, ...updates } = body;
 
     if (!id) {
-      return NextResponse.json({ success: false, message: "Missing record ID" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Missing record ID" },
+        { status: 400 }
+      );
     }
 
-    if (isSupabaseConfigured()) {
-      const { error } = await supabaseAdmin
-        .from("rsvps")
-        .update(updates)
-        .eq("id", id);
-      if (!error) {
-        return NextResponse.json({ success: true, message: "RSVP updated successfully" });
-      }
-      console.error("Supabase PUT error:", error.message);
-      return NextResponse.json({
-        success: false,
-        message: `Failed to update RSVP: ${error.message}`,
-      }, { status: 500 });
-    }
+    const { data, error } = await db
+      .from("rsvps")
+      .update(updates)
+      .eq("id", id)
+      .select();
 
-    const updated = await updateInMemoryRSVP(String(id), updates);
-    if (!updated) {
-      return NextResponse.json({ success: false, message: "Record not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true, message: "RSVP updated", data: updated });
-  } catch (error: unknown) {
-    const err = error as Error;
-    return NextResponse.json({ success: false, message: err?.message || "Internal server error" }, { status: 500 });
-  }
-}
-
-// DELETE: Soft delete or permanently delete an RSVP record
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
-
-    if (!id) {
-      return NextResponse.json({ success: false, message: "Missing record ID" }, { status: 400 });
-    }
-
-    const permanent = searchParams.get("permanent") === "true";
-
-    if (isSupabaseConfigured()) {
-      let error;
-      if (permanent) {
-        const res = await supabaseAdmin.from("rsvps").delete().eq("id", id);
-        error = res.error;
-      } else {
-        const res = await supabaseAdmin.from("rsvps").update({ is_deleted: true }).eq("id", id);
-        error = res.error;
-      }
-      if (!error) {
-        return NextResponse.json({
-          success: true,
-          message: permanent ? "Record permanently deleted" : "Record deleted successfully",
-        });
-      }
-      console.error("Supabase DELETE error:", error.message);
-      return NextResponse.json({
-        success: false,
-        message: `Failed to delete RSVP: ${error.message}`,
-      }, { status: 500 });
-    }
-
-    if (permanent) {
-      permanentDeleteInMemoryRSVP(id);
-    } else {
-      softDeleteInMemoryRSVP(id);
+    if (error) {
+      console.error("Supabase PUT error:", error);
+      return NextResponse.json(
+        { success: false, message: `Failed to update: ${error.message}` },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
       success: true,
-      message: permanent ? "Record permanently deleted" : "Record moved to deleted history",
+      message: "RSVP updated successfully.",
+      data,
     });
-  } catch (error: unknown) {
-    const err = error as Error;
-    return NextResponse.json({ success: false, message: err?.message }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error?.message || "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE: Soft delete or permanently delete an RSVP record in Supabase
+export async function DELETE(request: Request) {
+  try {
+    if (!isDatabaseConfigured()) {
+      return NextResponse.json(
+        { success: false, message: "Database is not configured." },
+        { status: 500 }
+      );
+    }
+
+    const db = getDatabaseClient();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Missing record ID" },
+        { status: 400 }
+      );
+    }
+
+    const permanent = searchParams.get("permanent") === "true";
+
+    let dbError;
+    if (permanent) {
+      const res = await db.from("rsvps").delete().eq("id", id);
+      dbError = res.error;
+    } else {
+      const res = await db.from("rsvps").update({ is_deleted: true }).eq("id", id);
+      dbError = res.error;
+    }
+
+    if (dbError) {
+      console.error("Supabase DELETE error:", dbError);
+      return NextResponse.json(
+        { success: false, message: `Failed to delete: ${dbError.message}` },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: permanent
+        ? "Record permanently deleted from Supabase."
+        : "Record moved to deleted history in Supabase.",
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error?.message || "Internal server error" },
+      { status: 500 }
+    );
   }
 }
